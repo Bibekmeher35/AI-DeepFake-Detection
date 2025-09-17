@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detailed Prediction</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #6c63ff;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        header a {
+            text-decoration: none;
+            color: #6c63ff;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        header a:hover {
+            background: #e0e0ff;
+        }
+        main {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        section h2 {
+            border-bottom: 2px solid #6c63ff;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        p {
+            margin: 0.5rem 0;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        video, audio {
+            display: block;
+            margin: 1rem 0;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .info {
+            font-size: 1.1rem;
+            color: #777;
+            margin-top: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Prediction Details</h1>
+        <a href="{% url 'ml_app:index' %}">Back to Home</a>
+    </header>
+
+    <main>
+        <!-- Video Analysis Section -->
+        <section>
+            <h2>Video Analysis</h2>
+            {% if video_file %}
+                <video src="{{ video_file }}" controls></video>
+            {% endif %}
+
+            <p><strong>Video Prediction:</strong>
+                {% if video_result %}
+                    {% if video_result == "real" %}
+                        The video appears to be real (not manipulated).
+                    {% elif video_result == "deepfake" %}
+                        The video appears to be a deepfake (manipulated content detected).
+                    {% else %}
+                        {{ video_result }}
+                    {% endif %}
+                {% else %}
+                    No video prediction available.
+                {% endif %}
+            </p>
+            <p class="info">
+                This is an overall video-level prediction based on analyzing all frames.
+            </p>
+
+            <p><strong>Face Summary:</strong>
+                {% if face_summary %}
+                    {{ face_summary }}
+                {% else %}
+                    No faces detected in the video.
+                {% endif %}
+            </p>
+            <p class="info">
+                Shows how many faces were detected in the video and how many were classified as real or deepfake.
+            </p>
+
+            <p><strong>FOMM Score:</strong>
+                {% if fomm_score %}
+                    {{ fomm_score }}
+                {% else %}
+                    Not available
+                {% endif %}
+            </p>
+            <p class="info">
+                FOMM (First Order Motion Model) score indicates how closely the predicted facial movements match natural motion. Higher score suggests more realistic motion.
+            </p>
+
+            <p><strong>Identity Variance Score:</strong>
+                {% if identity_score %}
+                    {{ identity_score }}
+                {% else %}
+                    Not available
+                {% endif %}
+            </p>
+            <p class="info">
+                Measures consistency of a person's identity across frames. High variance may indicate manipulated or inconsistent faces.
+            </p>
+        </section>
+
+        <!-- Audio Analysis Section -->
+        <section>
+            <h2>Audio Analysis</h2>
+            {% if audio_file_url %}
+                <audio controls src="{{ audio_file_url }}"></audio>
+            {% endif %}
+
+            {% if audio_result %}
+                <p><strong>Audio Prediction:</strong>
+                    The audio was analyzed and predicted as <strong>{{ audio_result }}</strong>.
+                </p>
+                {% if audio_result_confidence %}
+                    <p>Confidence: {{ audio_result_confidence|floatformat:2 }}%</p>
+                {% endif %}
+            {% else %}
+                <p>No audio prediction available.</p>
+            {% endif %}
+
+            <p class="info">
+                Audio prediction analyzes whether the sound is real or generated (deepfake). Confidence score indicates reliability of the prediction.
+            </p>
+        </section>
+    </main>
+</body>
+</html>

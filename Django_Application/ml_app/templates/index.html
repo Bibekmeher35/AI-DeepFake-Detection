@@ -1,0 +1,363 @@
+{% load static %}
+{% block content %}
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <link crossorigin href="https://fonts.gstatic.com/" rel="preconnect" />
+        <link
+            as="style"
+            href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Space+Grotesk%3Awght%40400%3B500%3B700"
+            onload="this.rel='stylesheet'"
+            rel="stylesheet" />
+        <title>LokTruth AI Deepfake Detection</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+        <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon" />
+        <script
+            src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <style type="text/tailwindcss">
+      :root {
+        --primary-color: #00ff66;
+        --background-color: #0d1026;
+      }
+      body {
+        background-color: var(--background-color);
+        font-family: "Space Grotesk", sans-serif;
+      }
+      .glow {
+        text-shadow: 0 0 8px var(--primary-color);
+      }
+      .circuit-bg {
+        background-image: radial-gradient(
+            circle at 1px 1px,
+            rgba(0, 255, 102, 0.2) 1px,
+            transparent 0
+          ),
+          radial-gradient(
+            circle at 10px 10px,
+            rgba(0, 255, 102, 0.1) 1px,
+            transparent 0
+          );
+        background-size: 20px 20px;
+      }
+    </style>
+        <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+      @keyframes wave {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(5deg); }
+        50% { transform: rotate(0deg); }
+        75% { transform: rotate(-5deg); }
+      }
+      .animate-\[wave_1s_infinite\] {
+        display: inline-block;
+        transform-origin: 70% 70%;
+        animation: wave 1s infinite;
+      }
+      .font-poppins {
+        font-family: 'Poppins', 'Space Grotesk', sans-serif !important;
+      }
+    </style>
+    </head>
+    <body class="text-white">
+        <div
+            class="relative flex h-auto min-h-screen w-full flex-col bg-[#0D1026] dark justify-between group/design-root overflow-x-hidden circuit-bg">
+            <div class="flex-grow">
+                <header
+                    class="sticky top-0 z-10 bg-[#0D1026]/80 backdrop-blur-sm">
+                    <div class="flex items-center p-4 justify-between">
+                        <h1 class="text-xl font-bold text-[#00FF66] glow">LokTruth</h1>
+                        <!-- Desktop Navigation -->
+                        <nav class="hidden md:flex space-x-6 text-sm font-medium text-[#00FF66]">
+                            <a href="#home" class="hover:text-white transition">Home</a>
+                            <a href="#about" class="hover:text-white transition">About</a>
+                            <a href="#features" class="hover:text-white transition">Features</a>
+                            <a href="#contact" class="hover:text-white transition">Contact</a>
+                        </nav>
+                        <!-- Mobile Menu Button -->
+                        <button id="menu-btn" class="p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#00FF66]">
+                            <svg class="w-6 h-6 text-[#00FF66]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Mobile Dropdown Menu -->
+                    <div id="mobile-menu" class="hidden flex-col absolute right-4 top-16 w-40 bg-[#1a1d3a] rounded-lg shadow-lg z-20">
+                        <a href="#home" class="block px-4 py-2 text-sm font-medium text-[#00FF66] hover:text-white transition">Home</a>
+                        <a href="#about" class="block px-4 py-2 text-sm font-medium text-[#00FF66] hover:text-white transition">About</a>
+                        <a href="#features" class="block px-4 py-2 text-sm font-medium text-[#00FF66] hover:text-white transition">Features</a>
+                        <a href="#contact" class="block px-4 py-2 text-sm font-medium text-[#00FF66] hover:text-white transition">Contact</a>
+                    </div>
+                </header>
+                <main class="p-4">
+                    <!-- Hero Section -->
+                    <section class="relative flex flex-col items-center justify-center text-center my-12">
+                      <div class="flex flex-col items-center gap-6 bg-[#1a1d3a]/80 border border-[#00FF66]/50 rounded-2xl shadow-2xl p-10 backdrop-blur-md relative overflow-hidden">
+                        <!-- Animated gradient overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-green-500 via-green-400 to-green-500 opacity-20 animate-[pulse_5s_infinite] rounded-2xl"></div>
+                        <h1 class="text-4xl md:text-5xl font-bold text-[#00FF66] glow animate-pulse z-10 relative">
+                          Deepfake Detection
+                        </h1>
+                        <p class="text-lg md:text-xl text-gray-200 max-w-xl z-10 relative">
+                          Detect fake media with powerful Audio and Video deepfake detection models.
+                        </p>                
+                        <div class="flex flex-wrap gap-6 justify-center z-10 relative">
+                          <a href="{% url 'ml_app:audio_upload' %}"
+                             class="bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg px-12 py-4 min-w-[200px] text-center rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 hover:from-green-600 hover:to-green-700 btn" role="button" aria-label="Audio Detection">
+                            Audio
+                          </a>
+                          <a href="{% url 'ml_app:upload_image' %}"
+                           class="bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg px-12 py-4 min-w-[200px] text-center rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 hover:from-green-600 hover:to-green-700 btn" role="button" aria-label="Image Detection">
+                           Image
+                          </a>
+                          <a href="{% url 'ml_app:video_upload' %}"
+                             class="bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg px-12 py-4 min-w-[200px] text-center rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 hover:from-green-600 hover:to-green-700 btn" role="button" aria-label="Video Detection">
+                            Video
+                          </a>
+                        </div>
+                      </div>
+                    </section>
+                    <div id="about" class="flex flex-col gap-3 mt-6">
+                        <details
+                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group"
+                            open>
+                            <summary
+                                class="flex cursor-pointer items-center justify-between p-4 list-none">
+                                <h3
+                                    class="text-base font-medium text-[#00FF66]">
+                                    Internet is Mandatory
+                                </h3>
+                                <div
+                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
+                                    <svg
+                                        fill="currentColor"
+                                        height="20px"
+                                        viewBox="0 0 256 256"
+                                        width="20px"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+                                    </svg>
+                                </div>
+                            </summary>
+                            <div class="px-4 pb-4 text-gray-300 text-sm">
+                                An active internet connection is required for
+                                the app to
+                                function correctly and analyze files with our
+                                latest AI models.
+                            </div>
+                        </details>
+                        <details
+                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group">
+                            <summary
+                                class="flex cursor-pointer items-center justify-between p-4 list-none">
+                                <h3
+                                    class="text-base font-medium text-[#00FF66]">
+                                    How to use?
+                                </h3>
+                                <div
+                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
+                                    <svg
+                                        fill="currentColor"
+                                        height="20px"
+                                        viewBox="0 0 256 256"
+                                        width="20px"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+                                    </svg>
+                                </div>
+                            </summary>
+                            <div class="px-4 pb-4 text-gray-300 text-sm">
+                                Simply select 'Audio' or 'Video', tap the
+                                'Upload File' button,
+                                and choose the content you want to analyze.
+                                We'll handle the
+                                rest!
+                            </div>
+                        </details>
+                        <details
+                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group">
+                            <summary
+                                class="flex cursor-pointer items-center justify-between p-4 list-none">
+                                <h3
+                                    class="text-base font-medium text-[#00FF66]">Deepfake?</h3>
+                                <div
+                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
+                                    <svg
+                                        fill="currentColor"
+                                        height="20px"
+                                        viewBox="0 0 256 256"
+                                        width="20px"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+                                    </svg>
+                                </div>
+                            </summary>
+                            <div class="px-4 pb-4 text-gray-300 text-sm">
+                                A deepfake is a synthetic media in which a
+                                person in an existing
+                                image or video is replaced with someone else's
+                                likeness using
+                                artificial intelligence.
+                            </div>
+                        </details>
+                        <details
+                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group">
+                            <summary
+                                class="flex cursor-pointer items-center justify-between p-4 list-none">
+                                <h3
+                                    class="text-base font-medium text-[#00FF66]">
+                                    Deepfake VS Real?
+                                </h3>
+                                <div
+                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
+                                    <svg
+                                        fill="currentColor"
+                                        height="20px"
+                                        viewBox="0 0 256 256"
+                                        width="20px"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+                                    </svg>
+                                </div>
+                            </summary>
+                            <div class="px-4 pb-4 text-gray-300 text-sm">
+                                Our service analyzes subtle artifacts and
+                                inconsistencies in
+                                audio and video files that are often invisible
+                                to the naked eye
+                                or ear, helping distinguish authentic content
+                                from AI-generated
+                                fakes.
+                            </div>
+                        </details>
+                        <details
+                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group">
+                            <summary
+                                class="flex cursor-pointer items-center justify-between p-4 list-none">
+                                <h3
+                                    class="text-base font-medium text-[#00FF66]">
+                                    Advantages!
+                                </h3>
+                                <div
+                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
+                                    <svg
+                                        fill="currentColor"
+                                        height="20px"
+                                        viewBox="0 0 256 256"
+                                        width="20px"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+                                    </svg>
+                                </div>
+                            </summary>
+                            <div class="px-4 pb-4 text-gray-300 text-sm">
+                                Protect yourself from misinformation, verify the
+                                authenticity of
+                                media, and ensure the integrity of digital
+                                content with our
+                                powerful detection tools.
+                            </div>
+                        </details>
+                    </div>
+                    <div id="contact" class="mt-8 text-center">
+                        <h3 class="text-lg font-bold text-white mb-4">LEGAL</h3>
+                        <div class="flex flex-col items-center gap-3">
+                            <a
+                                class="text-gray-400 hover:text-[#00FF66] transition-colors"
+                                href="#">Privacy Policy</a>
+                            <a
+                                class="text-gray-400 hover:text-[#00FF66] transition-colors"
+                                href="#">Terms &amp; Conditions</a>
+                            <a
+                                class="text-gray-400 hover:text-[#00FF66] transition-colors"
+                                href="#">Sitemap</a>
+                        </div>
+                    </div>
+                </main>
+            </div>
+            <!-- Footer -->
+            <footer class="sticky bottom-0 bg-[#0D1026]/90 backdrop-blur-md">
+              <div class="flex flex-col items-center border-t border-[#00FF66]/20 px-4 py-8 gap-6">
+                <h3 class="text-lg font-bold text-white mb-2 relative group">
+                  Contact Us
+                  <span class="absolute bottom-0 left-0 w-0 h-1 bg-[#00FF66] group-hover:w-full transition-all duration-300"></span>
+                </h3>
+                <div class="flex justify-center gap-10 text-[#00FF66] text-2xl">
+                  <!-- Instagram -->
+                  <a href="#" aria-label="Instagram" class="hover:text-white transition transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
+                      <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5zm8.75 2.25a.75.75 0 0 1 .102 1.493L16.25 7a.75.75 0 0 1-.102-1.493L16.25 5.75zm-4.25 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
+                    </svg>
+                  </a>
+                  <!-- Twitter -->
+                  <a href="#" aria-label="Twitter" class="hover:text-white transition transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 512 512" class="w-6 h-6">
+                      <path d="M459.4 151.7c.32 4.54.32 9.09.32 13.63 0 138.72-105.58 298.56-298.56 298.56-59.5 0-114.87-17.22-161.29-46.72 8.44.97 16.89 1.29 25.45 1.29 49.19 0 94.45-16.89 130.36-45.53-46.1-1.04-84.8-31.2-98.03-72.92 6.5 1.04 13.17 1.71 20.11 1.71 9.71 0 19.17-1.29 28.18-3.67-48.13-9.7-84.27-52.03-84.27-102.97v-1.29c14.08 7.83 30.21 12.51 47.43 13.03-28.11-18.81-46.5-50.8-46.5-87.06 0-19.17 5.17-37.06 14.08-52.48 51.14 62.8 127.3 104.16 213.12 108.49-1.71-7.83-2.62-15.99-2.62-24.15 0-57.78 46.85-104.63 104.63-104.63 30.21 0 57.48 12.51 76.6 32.75 23.7-4.54 46.1-13.17 66.3-25.45-7.83 24.46-24.46 45.03-46.1 57.78 21.11-2.31 41.09-8.11 59.74-16.34-14.08 20.79-31.82 39.18-52.19 53.86z"/>
+                    </svg>
+                  </a>
+                  <!-- LinkedIn -->
+                  <a href="#" aria-label="LinkedIn" class="hover:text-white transition transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 448 512" class="w-6 h-6">
+                      <path d="M100.28 448H7.4V148.9h92.88zm-46.44-340a53.64 53.64 0 1 1 53.6-53.64 53.64 53.64 0 0 1-53.6 53.64zM447.9 448h-92.68V302.4c0-34.7-12.42-58.4-43.48-58.4-23.7 0-37.8 15.9-44 31.3-2.3 5.6-2.9 13.4-2.9 21.2V448h-92.6s1.2-261.2 0-288h92.6v40.8c12.3-19 34.3-46.1 83.5-46.1 61 0 106.8 39.8 106.8 125.4V448z"/>
+                    </svg>
+                  </a>
+                  <!-- Facebook -->
+                  <a href="#" aria-label="Facebook" class="hover:text-white transition transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
+                      <path d="M22.675 0h-21.35C.6 0 0 .6 0 1.325v21.351C0 23.4.6 24 1.325 24H12.82v-9.294H9.692V11.31h3.128V8.412c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.464.099 2.797.143v3.24l-1.918.001c-1.504 0-1.796.715-1.796 1.763v2.31h3.588l-.467 3.396h-3.121V24h6.116C23.4 24 24 23.4 24 22.675V1.325C24 .6 23.4 0 22.675 0z"/>
+                    </svg>
+                  </a>
+                  <!-- YouTube -->
+                  <a href="#" aria-label="YouTube" class="hover:text-white transition transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 576 512" class="w-6 h-6">
+                      <path d="M549.655 124.083c-6.281-23.65-24.79-42.158-48.44-48.44C465.534 64 288 64 288 64s-177.534 0-213.215 11.643c-23.65 6.281-42.158 24.79-48.44 48.44C16 160.765 16 256 16 256s0 95.235 10.345 131.917c6.281 23.65 24.79 42.158 48.44 48.44C110.466 448 288 448 288 448s177.534 0 213.215-11.643c23.65-6.281 42.158-24.79 48.44-48.44C560 351.235 560 256 560 256s0-95.235-10.345-131.917zM232 334V178l142 78-142 78z"/>
+                    </svg>
+                  </a>
+                </div>
+                <div class="flex items-center justify-center gap-2 text-xs text-gray-400 pb-4 mt-2 font-poppins font-bold">
+                  <span>Designed in INDIA</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" class="h-6 w-auto">
+                    <rect width="1200" height="800" fill="#FF9933"/>
+                    <rect y="267" width="1200" height="266" fill="#FFFFFF"/>
+                    <rect y="533" width="1200" height="267" fill="#138808"/>
+                    <circle cx="600" cy="400" r="80" fill="#000088"/>
+                    <g stroke="#000088" stroke-width="8">
+                      <line x1="600" y1="320" x2="600" y2="480"/>
+                      <line x1="520" y1="400" x2="680" y2="400"/>
+                      <line x1="550" y1="350" x2="650" y2="450"/>
+                      <line x1="650" y1="350" x2="550" y2="450"/>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+            </footer>
+        </div>
+</div>
+    <script>
+      const menuBtn = document.getElementById('menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+      mobileMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+        });
+      });
+      // Close dropdown when clicking outside menu-btn or mobileMenu
+      document.addEventListener('click', (event) => {
+        if (!menuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+    </script>
+    </body>
+
+</html>
+{% endblock %}

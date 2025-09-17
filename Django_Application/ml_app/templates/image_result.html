@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<h2>Image Prediction Result</h2>
+{% if image_file_url %}
+<img src="{{ image_file_url }}" alt="Uploaded Image" style="max-width:400px;">
+{% endif %}
+<p>{{ image_result }}</p>
+<a href="{% url 'ml_app:image_upload' %}" class="btn btn-secondary">Upload Another Image</a>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Upload Image for Deepfake Detection</h2>
+
+  <!-- Drag & Drop Upload Area -->
+  <div id="drop-area" class="border border-primary rounded p-5 text-center bg-light"
+       ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+    <p class="mb-2">Drag & Drop an image file here</p>
+    <p class="text-muted">or</p>
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary mt-3">Predict Image</button>
+    </form>
+  </div>
+
+  <!-- Display result -->
+  {% if result %}
+    <div class="alert alert-info mt-4">
+      <strong>Result:</strong> {{ result }}
+    </div>
+  {% endif %}
+
+  <!-- Show uploaded image -->
+  {% if image_file_url %}
+    <div class="mt-3 text-center">
+      <img src="{{ image_file_url }}" alt="Uploaded Image"
+           class="img-fluid rounded shadow" style="max-height: 400px;">
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  function handleDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  }
+
+  function handleDrop(event) {
+    event.preventDefault();
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+      const form = document.getElementById("upload-form");
+      const input = form.querySelector("input[type='file']");
+      input.files = files; // Attach dropped file to form input
+      form.submit(); // Auto-submit after drop
+    }
+  }
+</script>
+{% endblock %}

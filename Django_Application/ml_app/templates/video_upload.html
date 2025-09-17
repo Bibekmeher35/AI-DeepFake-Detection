@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    .hero {
+        position: relative;
+        background: url("{% static 'images/hero-bg.jpg' %}") no-repeat center center/cover;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.55);
+        z-index: 1;
+    }
+    .upload-container {
+        position: relative;
+        z-index: 2;
+        background: #fff;
+        padding: 2.5rem;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+    }
+    .upload-container .logo img {
+        max-width: 120px;
+        margin-bottom: 1rem;
+    }
+    h2 {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #333;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1px;
+    }
+    .custom-file-upload {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        padding: 3rem 1rem;
+        border: 2px dashed #6c63ff;
+        border-radius: 12px;
+        background: #fdfdff;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #6c63ff;
+        cursor: pointer;
+        transition: border-color 0.3s ease, background 0.3s ease, transform 0.2s;
+    }
+    .custom-file-upload:hover {
+        border-color: #574bdb;
+        background: #f9f9ff;
+        transform: scale(1.02);
+    }
+    input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: 3rem 1rem; /* increase height for visibility */
+        border: 2px dashed #6c63ff;
+        border-radius: 12px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+        text-align: center;
+        background: #fdfdff;
+        position: relative;
+        z-index: 2;
+        opacity: 0; /* hide default text */
+    }
+    input[type="file"]::before {
+        content: "📂 Choose a file";
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #6c63ff;
+        font-weight: 600;
+        text-align: center;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+    }
+    video {
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    input[type="range"] {
+        width: 100%;
+        margin-top: 8px;
+    }
+    #slider-value {
+        font-weight: 600;
+        color: #6c63ff;
+        margin-left: 6px;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #6c63ff, #9b8cff);
+        border: none;
+        border-radius: 30px;
+        padding: 0.7rem 1.8rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.3s ease;
+        width: 100%;
+        margin-top: 1rem;
+    }
+    .btn-primary:hover {
+        transform: scale(1.03);
+        background: linear-gradient(135deg, #574bdb, #7b6be8);
+        box-shadow: 0 0 12px rgba(108, 99, 255, 0.6);
+    }
+    .btn-back {
+        display: inline-block;
+        margin-top: 1rem;
+        color: #6c63ff;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .btn-back:hover {
+        color: #453ec4;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="hero">
+    <div class="upload-container">
+        <div class="logo"><img src="{% static 'images/logo1.png' %}" alt="Logo"></div>
+        <h2>Upload a Video</h2>
+
+        <video width="100%" controls id="video-preview" style="display:none;">
+            <source src="" id="video-source">
+            Your browser does not support HTML5 video.
+        </video>
+
+        <form class="form" method="POST" enctype="multipart/form-data" id="video-upload-form" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="upload_video_file" class="custom-file-upload">📂 Choose a file</label>
+                <input type="file" id="upload_video_file" name="upload_video_file" required onchange="previewVideo(event)">
+            </div>
+            <div class="form-group">
+                <label for="sequence_length">Sequence Length:</label>
+                <input type="range" id="sequence_length" name="sequence_length" min="10" max="100" step="10" value="10">
+                <span id="slider-value">10</span>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload & Analyze</button>
+        </form>
+        <a href="{% url 'ml_app:index' %}" class="btn-back">&larr; Back to Home</a>
+    </div>
+</div>
+
+<script>
+    const slider = document.getElementById('sequence_length');
+    const sliderValue = document.getElementById('slider-value');
+    slider.addEventListener('input', () => sliderValue.innerText = slider.value);
+
+    function previewVideo(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('video-preview');
+        const source = document.getElementById('video-source');
+        if (file) {
+            source.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+            preview.load();
+        }
+    }
+</script>
+{% endblock %}
