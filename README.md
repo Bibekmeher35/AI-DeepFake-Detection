@@ -1,6 +1,5 @@
 # AI-DeepFake-Detection
 Development of an AI-based Deepfake Detection System for News Media, Cybercrime Investigation Units, and Social Media Platforms to Safeguard Digital Trust and Combat Misinformation.
-# AI Deepfake Detection using Deep Learning (ResNext and LSTM)
 
 ## Give a Star⭐ to repo
 
@@ -13,8 +12,6 @@ This project aims to detect video deepfakes using deep learning techniques like 
 
 This project has been developed by Bibek Meher (Team: Anshuman Mishra, Karan Dev Gorai, Satwik Shivam, Aditi Kumari Singh, Prabhati Karmakar) at C V Raman Global University, Bhubaneswar.
 
-You can also watch [this Youtube video](https://www.youtube.com/watch?v=_q16aJTXVRE) to get a better intuition about the project.
-You can watch [this playList](https://www.youtube.com/watch?v=quJ8Rv84oA0&list=PLNIj0dkfMA1FsD5xR4IEc8vdwr66_WExl) for step by step installation.
 
 You can read more about the project on <a href="https://github.com/Bibekmeher35/AI-DeepFake-Detection/tree/main/Documentation" target="_blank"><img src="https://img.shields.io/badge/Documentation-blue?style=for-the-badge&logo=github&logoColor=white" alt="Documentation" /></a>&nbsp;
 
@@ -41,22 +38,13 @@ Deepfake_detection_using_deep_learning
 </p>
 
 ## 4. Demo 
-### You can watch the [youtube video](https://www.youtube.com/watch?v=_q16aJTXVRE&t=823s) for demo
+### You can watch the for demo
 
 <p align="center">
   <img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/github_assets/fakegif.gif" />
 </p>
 
 ## 5. Our Results
-
-| Model Name | No of videos | No of Frames | Accuracy |
-|------------|--------------|--------------|----------|
-|model_84_acc_10_frames_final_data.pt |6000 |10 |84.21461|
-|model_87_acc_20_frames_final_data.pt | 6000 |20 |87.79160|
-|model_89_acc_40_frames_final_data.pt | 6000| 40 |89.34681|
-|model_90_acc_60_frames_final_data.pt | 6000| 60 |90.59097 |
-|model_91_acc_80_frames_final_data.pt | 6000 | 80 | 91.49818 |
-|model_93_acc_100_frames_final_data.pt| 6000 | 100 | 93.58794|
 
 ## 6. Contributors
 
