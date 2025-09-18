@@ -51,7 +51,7 @@ mistune==3.0.2
 nbconvert==7.16.4
 nbformat==5.10.4
 notebook==7.2.1
-numpy===1.26.4
+numpy==1.24.0
 opencv-python==4.10.0.84
 packaging==24.1
 pandas==2.2.2
@@ -99,3 +99,6 @@ watchdog==4.0.1
 wcwidth==0.2.13
 webencodings==0.5.1
 widgetsnbextension==4.0.11
+ultralytics
+pydub==0.25.1
+scikit-learn==1.1.3
