@@ -72,15 +72,6 @@ More details: [MODEL.md](MODEL.md)
 
 ---
 
-## 📈 Evaluation
-Run the evaluation script:
-```bash
-python evaluate.py --test_data ./data/test
-```
-This will print Accuracy, Precision, Recall, F1 score.
-
----
-
 ## 🚀 Roadmap
 - [ ] Add live streaming detection  
 - [ ] Optimize inference with ONNX / TensorRT  
