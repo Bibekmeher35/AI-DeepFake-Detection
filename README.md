@@ -1,9 +1,13 @@
-
-
-# 🧠 AI DeepFake Detection
-
+# AI-DeepFake-Detection
 Deepfakes pose a significant threat to digital media authenticity.  
 This project provides an **AI-powered DeepFake Detection System** built with **PyTorch, Django, and Transfer Learning**.
+
+---
+
+## 1. Introduction
+This project aims to detect video deepfakes using deep learning techniques like ResNext and LSTM. We achieved deepfake detection by using transfer learning where the pretrained ResNext CNN is used to obtain a feature vector, and the LSTM layer is trained using the features. 
+
+This project has been developed by Bibek Meher (Team: Anshuman Mishra, Karan Dev Gorai, Satwik Shivam, Aditi Kumari Singh, Prabhati Karmakar) at C V Raman Global University, Bhubaneswar.
 
 ---
 
