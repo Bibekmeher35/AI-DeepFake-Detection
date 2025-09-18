@@ -1,72 +1,95 @@
-# AI-DeepFake-Detection
-Development of an AI-based Deepfake Detection System for News Media, Cybercrime Investigation Units, and Social Media Platforms to Safeguard Digital Trust and Combat Misinformation.
-
-## Give a Star⭐ to repo
-
-## Latest Update
-#### We have dockerised the [Django Application](https://github.com/Bibekmeher35/AI-DeepFake-Detection/tree/main/Django_Application) now you can spin up a container within seconds without worring about dependencies
 
 
-## 1. Introduction
-This project aims to detect video deepfakes using deep learning techniques like ResNext and LSTM. We achieved deepfake detection by using transfer learning where the pretrained ResNext CNN is used to obtain a feature vector, and the LSTM layer is trained using the features. 
+# 🧠 AI DeepFake Detection
 
-This project has been developed by Bibek Meher (Team: Anshuman Mishra, Karan Dev Gorai, Satwik Shivam, Aditi Kumari Singh, Prabhati Karmakar) at C V Raman Global University, Bhubaneswar.
+Deepfakes pose a significant threat to digital media authenticity.  
+This project provides an **AI-powered DeepFake Detection System** built with **PyTorch, Django, and Transfer Learning**.
 
+---
 
-You can read more about the project on <a href="https://github.com/Bibekmeher35/AI-DeepFake-Detection/tree/main/Documentation" target="_blank"><img src="https://img.shields.io/badge/Documentation-blue?style=for-the-badge&logo=github&logoColor=white" alt="Documentation" /></a>&nbsp;
+## ✨ Features
+- 🎥 **Video DeepFake Detection** using CNN (ResNeXt) + LSTM sequence modeling.
+- 🌐 **Web Application** (Django) for uploading and detecting fakes in videos.
+- 🐳 **Dockerized** for easy deployment on any machine.
+- ⚡ Works on **CPU-only systems** (Non-CUDA/AMD GPU supported).
+- 📊 Provides evaluation metrics: Accuracy, Precision, Recall, F1.
 
+---
 
-## 2. Directory Structure
-For ease of understanding the project is structured in below format
+## 📂 Project Structure
 ```
-Deepfake_detection_using_deep_learning
-    |--- Django Application
-        |--- ml_app
-            |--- view.py <-- source code
-        |--- manage.py <-- run this "python manage.py runserver"
+AI-DeepFake-Detection/
+│── Django_Application/    # Web app for video upload & detection
+│── requirements.txt       # Python dependencies
+│── Dockerfile             # Container setup
+│── evaluate.py            # Model evaluation script
+│── README.md              # Project description
 ```
-1. Django Application 
-   - This directory consists of the django made application of our work. Where a user can upload the video and submit it to the model for prediction. The trained model performs the prediction and the result is displayed on the screen.
-2. Model Creation
-   - This directory consists of the step by step process of creating and training a deepfake detection model using our approach.
-3. Documentation
-   - This directory consists of all the documentation done during the project
-   
-## 3. System Architecture
-<p align="center">
-  <img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/github_assets/System%20Architecture.png" />
-</p>
 
-## 4. Demo 
-### You can watch the for demo
+---
 
-<p align="center">
-  <img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/github_assets/fakegif.gif" />
-</p>
+## ⚙️ Installation
 
-## 5. Our Results
+### 1. Clone repo
+```bash
+git clone https://github.com/Bibekmeher35/AI-DeepFake-Detection.git
+cd AI-DeepFake-Detection
+```
 
-## 6. Contributors
+### 2. Create environment
+```bash
+pip install -r requirements.txt
+```
 
-- Bibek Meher
-- Anshuman Mishra
-- Karan Dev Gorai
-- Satwik Shivam
-- Aditi Kumari Singh
-- Prabhati Karmakar
-   
-## 7. License
+### 3. Run Django app
+```bash
+cd Django_Application
+python manage.py migrate
+python manage.py runserver
+```
+Open: **http://127.0.0.1:8000/**
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+---
 
-## 8. We welcome Open Source Contribution. 
-### Below are the some changes that can be applied to the project. New Ideas will be appreciated.
-- [ ] Deploying the applications in free cloud 
-- [ ] Creating open source API for detection
-- [ ] Batch processing of entire video instead of processing first 'x' frames.
-- [ ] Optimizing the code for faster execution.
-#### Completed 
-- [X] Dockerizing the app
-- [X] Enabling working of project on Non Cuda Computers. i.e on normal or AMD GPUs
+## 🐳 Docker Setup
+```bash
+docker build -t deepfake-detector .
+docker run -p 8000:8000 deepfake-detector
+```
 
-## 9. Dont forget to Star⭐ this repo 😉 
+---
+
+## 📊 Model Details
+- **Base CNN**: ResNeXt (transfer learning from ImageNet).
+- **Sequence Layer**: LSTM (captures temporal frame dependencies).
+- **Input**: Extracted video frames (1 per second or every nth frame).
+- **Output**: `Real` or `DeepFake` probability.
+
+More details: [MODEL.md](MODEL.md)
+
+---
+
+## 📈 Evaluation
+Run the evaluation script:
+```bash
+python evaluate.py --test_data ./data/test
+```
+This will print Accuracy, Precision, Recall, F1 score.
+
+---
+
+## 🚀 Roadmap
+- [ ] Add live streaming detection  
+- [ ] Optimize inference with ONNX / TensorRT  
+- [ ] Add progress bar for large video uploads  
+- [ ] REST API endpoints with Django REST Framework  
+
+---
+
+## 👨‍💻 Contributors
+- **Bibek Meher** (Maintainer)
+
+---
+
+## 📜 License
+GNU GPL v3.0
