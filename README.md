@@ -20,7 +20,6 @@ You can read more about the project on <a href="https://github.com/Bibekmeher35/
 For ease of understanding the project is structured in below format
 ```
 Deepfake_detection_using_deep_learning
-    |
     |--- Django Application
         |--- ml_app
             |--- view.py <-- source code
