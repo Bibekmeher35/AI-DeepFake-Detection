@@ -26,7 +26,6 @@ AI-DeepFake-Detection/
 │── Django_Application/    # Web app for video upload & detection
 │── requirements.txt       # Python dependencies
 │── Dockerfile             # Container setup
-│── evaluate.py            # Model evaluation script
 │── README.md              # Project description
 ```
 
