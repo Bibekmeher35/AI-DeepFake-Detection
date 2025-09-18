@@ -22,8 +22,9 @@ For ease of understanding the project is structured in below format
 Deepfake_detection_using_deep_learning
     |
     |--- Django Application
-    |--- Model Creation
-    |--- Documentaion
+        |--- ml_app
+            |--- view.py <-- source code
+        |--- manage.py <-- run this "python manage.py runserver"
 ```
 1. Django Application 
    - This directory consists of the django made application of our work. Where a user can upload the video and submit it to the model for prediction. The trained model performs the prediction and the result is displayed on the screen.
