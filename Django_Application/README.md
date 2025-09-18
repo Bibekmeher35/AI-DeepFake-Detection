@@ -34,5 +34,5 @@ docker run -p 8000:8000 deepfake-detector
 ## Demo 
 ### You can watch the demo video
 <p align="center">
-  <img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/Demo_Video.mp4" />
+  <img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/Repo_media/DEMO_Videos.gif" />
 </p>  
