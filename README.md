@@ -76,8 +76,9 @@ docker run -p 8000:8000 deepfake-detector
 - **Output**: `Real` or `DeepFake` probability.
 
 # Structure
-<img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/Repo_media/Model_Structure.png">
-
+<p align="center">
+  <img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/Repo_media/Full_Model.png" />
+</p>
 More details: [MODEL.md](MODEL.md)
 
 ---
