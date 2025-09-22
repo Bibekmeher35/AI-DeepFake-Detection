@@ -75,6 +75,9 @@ docker run -p 8000:8000 deepfake-detector
 - **Input**: Extracted video frames (1 per second or every nth frame).
 - **Output**: `Real` or `DeepFake` probability.
 
+# Structure
+<img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/Repo_media/Model_Structure.png">
+
 More details: [MODEL.md](MODEL.md)
 
 ---
