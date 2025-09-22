@@ -27,7 +27,10 @@ from pydub import AudioSegment
 from sklearn.cluster import DBSCAN
 logger = logging.getLogger(__name__)
 
-# === AUDIO HELPER FUNCTIONS ===
+# For SimpleNamespace
+from types import SimpleNamespace
+
+## === AUDIO HELPER FUNCTIONS ===
 def ensure_wav(input_path, output_dir=None):
     """Convert MP3 → WAV if needed. output_dir is the full path where to save the wav."""
     ext = os.path.splitext(input_path)[1].lower()
@@ -78,189 +81,210 @@ def extract_audio_from_video(video_path, output_dir):
         logger.warning(f"Audio extraction failed: {e}")
         return None
 
+
 def predict_page(request):
     """
-    Unified predict page with parallel video + audio prediction.
-    Video detection always runs, audio detection runs if audio present.
+    Unified predict page: handles video detection result (always), and audio detection if audio POSTed.
     """
-    audio_result = None
-    audio_file_url = None
-
-    # --- AUDIO HANDLING: if user submitted a standalone audio file ---
-    if request.method == "POST" and request.FILES.get("audio_file", None):
-        audio_file = request.FILES["audio_file"]
-        audio_upload_dir = os.path.join(settings.MEDIA_ROOT, "uploaded_audios")
-        os.makedirs(audio_upload_dir, exist_ok=True)
-        base_audio_filename = f"{int(time.time())}_{audio_file.name}"
-        saved_audio_path = os.path.join(audio_upload_dir, base_audio_filename)
-        with open(saved_audio_path, "wb+") as out_audio:
-            for chunk in audio_file.chunks():
-                out_audio.write(chunk)
-        wav_path = ensure_wav(saved_audio_path, output_dir=audio_upload_dir)
-        request.session['uploaded_audio_path'] = wav_path
-
-    # --- VIDEO INPUT VALIDATION ---
+    # Ensure video file exists in session
     if 'file_name' not in request.session:
         return redirect("ml_app:index")
-
     video_file = request.session['file_name']
     sequence_length = request.session['sequence_length']
+    path_to_videos = [video_file]
     video_filename = os.path.basename(video_file)
     video_url = request.session.get('video_url', os.path.join("uploaded_videos", video_filename))
     production_video_name = os.path.join(settings.MEDIA_URL, video_url)
 
-    # --- Define helper functions ---
-    def process_audio():
-        """Extract audio (if not already provided) and run audio prediction."""
-        audio_upload_dir = os.path.join(settings.MEDIA_ROOT, "uploaded_audios")
-        os.makedirs(audio_upload_dir, exist_ok=True)
+    # === AUDIO HANDLING (extracted + optional uploaded audio) ===
+    audio_result = {"label": "No audio prediction available", "confidence": 0.0}
+    audio_file_url = None
+    audio_upload_dir = os.path.join(settings.MEDIA_ROOT, "uploaded_audios")
+    os.makedirs(audio_upload_dir, exist_ok=True)
 
-        wav_path = request.session.get('uploaded_audio_path')
-        if not wav_path:  # auto extract from video
-            extracted_audio_path = extract_audio_from_video(video_file, audio_upload_dir)
-            wav_path = extracted_audio_path if extracted_audio_path else None
+    # Extract audio from video
+    audio_from_video_path = extract_audio_from_video(video_file, output_dir=audio_upload_dir)
+    if audio_from_video_path:
+        audio_result = detect_audio_file(audio_from_video_path)
+        audio_file_url = os.path.join(settings.MEDIA_URL, "uploaded_audios", os.path.basename(audio_from_video_path))
 
-        if wav_path:
-            result = detect_audio_file(wav_path)
-            return result, os.path.join(settings.MEDIA_URL, "uploaded_audios", os.path.basename(wav_path))
-        return None, None
+    # Optional: handle user-uploaded audio to override
+    if request.method == "POST" and request.FILES.get("audio_file", None):
+        uploaded_audio_file = request.FILES["audio_file"]
+        base_audio_filename = f"{int(time.time())}_{uploaded_audio_file.name}"
+        saved_audio_path = os.path.join(audio_upload_dir, base_audio_filename)
+        with open(saved_audio_path, "wb+") as out_audio:
+            for chunk in uploaded_audio_file.chunks():
+                out_audio.write(chunk)
+        wav_path = ensure_wav(saved_audio_path, output_dir=audio_upload_dir)
+        audio_result = detect_audio_file(wav_path)
+        audio_file_url = os.path.join(settings.MEDIA_URL, "uploaded_audios", os.path.basename(wav_path))
 
-    def run_video_prediction():
-        """
-        Run video face detection + deepfake prediction using ResNeXt+LSTM Model pipeline.
-        """
-        # Prepare dataset for video, extract frames, YOLO face crop, transforms
-        video_dataset = validation_dataset([video_file], sequence_length=sequence_length, transform=train_transforms)
-        model = load_global_model()
-        preprocessed_images, faces_cropped_images = [], []
-        padding = 60
-        embeddings = []
-        scores = {"bg_flow_ratio": [], "boundary_flicker": [], "spec_slope": []}
-        prev_frame = None
-        video_file_name_only = os.path.splitext(video_filename)[0]
+    video_dataset = validation_dataset(path_to_videos, sequence_length=sequence_length, transform=train_transforms)
+    model = load_global_model()
+    start_time = time.time()
+    preprocessed_images = []
+    faces_cropped_images = []
+    padding = 60
+    faces_found = 0
+    scores = {"bg_flow_ratio": [], "boundary_flicker": [], "spec_slope": []}
+    prev_frame = None
+    # --- Begin: Accurate face summary logic ---
+    face_predictions = []
+    embeddings = []
+    cap = cv2.VideoCapture(video_file)
+    frame_count = 0
+    video_file_name_only = os.path.splitext(video_filename)[0]
+    while cap.isOpened() and frame_count < sequence_length:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame_count += 1
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        image_name = f"{video_file_name_only}_preprocessed_{frame_count}.png"
+        pImage.fromarray(rgb_frame, 'RGB').save(os.path.join(settings.PROJECT_DIR, 'uploaded_images', image_name))
+        preprocessed_images.append(image_name)
 
-        # For UI, save preprocessed and cropped faces (optional, only for first N frames)
-        cap = cv2.VideoCapture(video_file)
-        frame_count = 0
-        while cap.isOpened() and frame_count < sequence_length:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            frame_count += 1
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image_name = f"{video_file_name_only}_preprocessed_{frame_count}.png"
-            pImage.fromarray(rgb_frame, 'RGB').save(os.path.join(settings.PROJECT_DIR, 'uploaded_images', image_name))
-            preprocessed_images.append(image_name)
+        # --- New: process all faces per frame, avoid double-counting ---
+        results = yolo_face_detector(frame, verbose=False)
+        if len(results) == 0 or len(results[0].boxes) == 0:
+            continue
 
-            results = yolo_face_detector(frame, verbose=False)
-            if len(results) == 0 or len(results[0].boxes) == 0:
-                continue
-            for box_tensor in results[0].boxes.xyxy:
-                try:
-                    box = box_tensor.cpu().numpy().astype(int)
-                    left, top, right, bottom = box
-                    h_frame, w_frame = frame.shape[:2]
-                    pad_left = max(0, left - padding)
-                    pad_top = max(0, top - padding)
-                    pad_right = min(w_frame, right + padding)
-                    pad_bottom = min(h_frame, bottom + padding)
-                    frame_face = frame[pad_top:pad_bottom, pad_left:pad_right]
-                    if frame_face is None or frame_face.size == 0:
-                        continue
-                    rgb_face = cv2.cvtColor(frame_face, cv2.COLOR_BGR2RGB)
-                    image_name = f"{video_file_name_only}_cropped_faces_{frame_count}_{left}_{top}.png"
-                    pImage.fromarray(rgb_face, 'RGB').save(os.path.join(settings.PROJECT_DIR, 'uploaded_images', image_name))
-                    faces_cropped_images.append(image_name)
-                    if prev_frame is not None:
-                        try:
-                            scores["bg_flow_ratio"].append(bg_face_flow_ratio(prev_frame, frame, box))
-                            scores["boundary_flicker"].append(boundary_flicker(prev_frame, frame, box))
-                        except Exception:
-                            pass
-                    try:
-                        face_gray = cv2.cvtColor(frame_face, cv2.COLOR_BGR2GRAY)
-                        scores["spec_slope"].append(spectral_slope(cv2.resize(face_gray, (112, 112))))
-                    except Exception:
-                        pass
-                    # embeddings
-                    try:
-                        rgb_face_for_enc = cv2.cvtColor(frame_face, cv2.COLOR_BGR2RGB)
-                        encs = face_recognition.face_encodings(rgb_face_for_enc)
-                        if encs:
-                            embeddings.append(encs[0])
-                    except Exception:
-                        continue
-                except Exception:
+        for box_tensor in results[0].boxes:  # iterate over all detected faces
+            try:
+                box = box_tensor.xyxy[0].cpu().numpy().astype(int)
+                left, top, right, bottom = box[0], box[1], box[2], box[3]
+
+                # Apply padding
+                h_frame, w_frame = frame.shape[:2]
+                pad_left = max(0, left - padding)
+                pad_top = max(0, top - padding)
+                pad_right = min(w_frame, right + padding)
+                pad_bottom = min(h_frame, bottom + padding)
+                frame_face = frame[pad_top:pad_bottom, pad_left:pad_right]
+                if frame_face is None or frame_face.size == 0:
                     continue
-            prev_frame = frame
-        cap.release()
 
-        if embeddings:
-            clustering = DBSCAN(eps=0.5, min_samples=1, metric="euclidean").fit(embeddings)
-            faces_found = len(set(clustering.labels_)) - (1 if -1 in clustering.labels_ else 0)
-        else:
-            faces_found = 0
+                # Convert to RGB
+                rgb_face = cv2.cvtColor(frame_face, cv2.COLOR_BGR2RGB)
 
-        if faces_found == 0:
-            return {"no_faces": True}
+                # Save cropped face
+                image_name = f"{video_file_name_only}_cropped_faces_{frame_count}_{faces_found+1}.png"
+                pImage.fromarray(rgb_face, 'RGB').save(os.path.join(settings.PROJECT_DIR, 'uploaded_images', image_name))
+                faces_cropped_images.append(image_name)
+                faces_found += 1
 
-        # Use ResNeXt+LSTM model for classification
-        prediction = predict(model, video_dataset[0], './', video_file_name_only)
-        output, confidence, base_pred_idx = prediction[0], round(prediction[1], 1), prediction[2]
+                # Compute embedding
+                encs = face_recognition.face_encodings(rgb_face)
+                if encs:
+                    embeddings.append(encs[0])
+
+                # Predict face label for this cropped face
+                face_tensor = train_transforms(rgb_face).unsqueeze(0).unsqueeze(0)  # shape (1,1,C,H,W)
+                prediction = predict(model, face_tensor, './', video_file_name_only)
+                face_label = prediction[0]
+                face_predictions.append(face_label)
+
+                # Optional: FOMM metrics for face (as before)
+                if prev_frame is not None:
+                    try:
+                        scores["bg_flow_ratio"].append(bg_face_flow_ratio(prev_frame, frame, box))
+                        scores["boundary_flicker"].append(boundary_flicker(prev_frame, frame, box))
+                    except Exception as e:
+                        logger.info(f"FOMM metric failed: {e}")
+                try:
+                    face_gray = cv2.cvtColor(frame_face, cv2.COLOR_BGR2GRAY)
+                    scores["spec_slope"].append(spectral_slope(cv2.resize(face_gray, (112,112))))
+                except Exception as e:
+                    logger.info(f"Spectral slope failed: {e}")
+
+            except Exception as e:
+                logger.info(f"Face processing failed: {e}")
+        prev_frame = frame
+    cap.release()
+    # --- End: Accurate face summary logic ---
+    logger.info("<=== | Videos Splitting and Face Cropping Done | ===>")
+    logger.info("--- %s seconds ---", time.time() - start_time)
+    if faces_found == 0:
+        return render(request, predict_template_name, {"no_faces": True})
+    logger.debug("FOMM raw arrays: flow=%s, flick=%s, spec=%s",
+                 str(scores.get('bg_flow_ratio', []))[:200],
+                 str(scores.get('boundary_flicker', []))[:200],
+                 str(scores.get('spec_slope', []))[:200])
+    try:
+        heatmap_images = []
+        output = ""
+        confidence = 0.0
+        for i in range(len(path_to_videos)):
+            logger.info("<=== | Started Prediction | ===>")
+            prediction = predict(model, video_dataset[i], './', video_file_name_only)
+            confidence = round(prediction[1], 1)
+            output = prediction[0]
+            base_pred_idx = prediction[2]
+            logger.info("Base model index returned: %d", base_pred_idx)
+            logger.info("Prediction: %s Confidence: %s", output, confidence)
+            logger.info("<=== | Prediction Done | ===>")
+            logger.info("--- %s seconds ---", time.time() - start_time)
         fomm_score = fomm_likelihood(scores)
         from .forensics import identity_variance
         identity_score = identity_variance(embeddings)
+        logger.info("Identity variance score: %.2f", identity_score)
+        logger.info("FOMM counts: flow=%d, flick=%d, spec=%d",
+                    len(scores.get('bg_flow_ratio', [])),
+                    len(scores.get('boundary_flicker', [])),
+                    len(scores.get('spec_slope', [])))
+        final_confidence = confidence
+        logger.info("Final decision (base model only): %s (Confidence=%.2f)", output, final_confidence)
+        # --- Begin: Cluster embeddings and count unique faces ---
+        if embeddings:
+            X = np.stack(embeddings)
+            clustering = DBSCAN(eps=0.6, min_samples=1).fit(X)
+            labels = clustering.labels_
 
-        if output.upper() == "FAKE":
-            face_summary = f"{faces_found} faces detected, {faces_found} Deepfake"
-        elif output.upper() == "REAL":
-            face_summary = f"{faces_found} faces detected, {faces_found} Real"
+            unique_faces = {}
+            for idx, cluster_label in enumerate(labels):
+                if cluster_label not in unique_faces:
+                    unique_faces[cluster_label] = []
+                unique_faces[cluster_label].append(face_predictions[idx])
+
+            final_face_predictions = {}
+            for cluster, preds in unique_faces.items():
+                if preds.count("FAKE") > preds.count("REAL"):
+                    final_face_predictions[cluster] = "FAKE"
+                else:
+                    final_face_predictions[cluster] = "REAL"
+
+            num_real = sum(1 for v in final_face_predictions.values() if v == "REAL")
+            num_fake = sum(1 for v in final_face_predictions.values() if v == "FAKE")
+            total_faces = len(final_face_predictions)
+            face_summary = f"{total_faces} faces detected: {num_real} Real, {num_fake} Fake"
         else:
-            face_summary = f"{faces_found} faces detected, prediction uncertain"
-
-        return {
-            "preprocessed_images": preprocessed_images,
-            "faces_cropped_images": faces_cropped_images,
-            "original_video": production_video_name,
-            "output": output,
-            "confidence": confidence,
-            "fomm_score": fomm_score,
-            "identity_score": identity_score,
-            "base_pred_idx": base_pred_idx,
-            "face_summary": face_summary,
+            face_summary = "No faces detected"
+        # --- End: Cluster embeddings and count unique faces ---
+        context = {
+            'preprocessed_images': preprocessed_images,
+            'faces_cropped_images': faces_cropped_images,
+            'heatmap_images': heatmap_images if heatmap_images else None,
+            'original_video': production_video_name,
+            'models_location': os.path.join(settings.PROJECT_DIR, 'models'),
+            'output': output,
+            'confidence': final_confidence,
+            'fomm_score': fomm_score,
+            'identity_score': identity_score,
+            'base_pred_idx': base_pred_idx,
+            # Audio results for predict.html (if present)
+            'result': audio_result,
+            'audio_file_url': audio_file_url,
+            'video_result': output,
+            'face_summary': face_summary
         }
-
-    # --- Run video + audio in parallel ---
-    results = {}
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        future_tasks = {
-            executor.submit(run_video_prediction): "video",
-            executor.submit(process_audio): "audio"
-        }
-        for future in as_completed(future_tasks):
-            key = future_tasks[future]
-            try:
-                results[key] = future.result()
-            except Exception as e:
-                results[key] = {"error": str(e)}
-
-    # --- Extract results ---
-    video_result = results.get("video", {})
-    audio_result, audio_file_url = results.get("audio", (None, None))
-
-    # Merge into context for predict.html
-    context = {**video_result}
-    context.update({
-        "result": audio_result,
-        "audio_file_url": audio_file_url,
-    })
-
-    # Save everything for prediction_details
-    request.session["prediction_details"] = context
-
-    if "no_faces" in video_result:
-        return render(request, predict_template_name, {"no_faces": True})
-    return render(request, predict_template_name, context)
+        # Store prediction details in session for later retrieval
+        request.session['prediction_details'] = context
+        return render(request, predict_template_name, context)
+    except Exception as e:
+        logger.error("Exception occurred during prediction: %s", e)
+        return render(request, 'cuda_full.html')
+    
 
 def image_upload_view(request):
     """
@@ -316,31 +340,27 @@ def image_upload_view(request):
         "result": result_sentence,
         "image_file_url": image_file_url
     })
-    
+
 # --- AUDIO DEEPFAKE DETECTION UTILITY & VIEW ---
 def detect_audio_file(audio_path, request=None):
     """
     Utility to handle audio deepfake detection given a path to an audio file.
-    Returns: result (dict) with 'label' and 'confidence'.
+    Returns: result dict with 'label' and 'confidence' keys.
     """
     try:
-        # Ensure WAV format
         wav_path = ensure_wav(audio_path)
     except Exception as e:
         return {"label": "Error", "confidence": 0.0, "error": f"Audio conversion failed: {e}"}
+
     try:
         model_path = os.path.join(settings.BASE_DIR, "ml_app", "best.pt")
         device = "cuda" if torch.cuda.is_available() else "cpu"
         result = audio_predict(model_path, wav_path, device=device)
 
         confidence = max(result["probs"].values()) * 100
-        return {
-            "label": result["class"],
-            "confidence": round(confidence, 2)
-        }
+        return {"label": result["class"], "confidence": round(confidence, 2)}
     except Exception as e:
         return {"label": "Error", "confidence": 0.0, "error": f"Audio detection failed: {e}"}
-
 
 
 # --- VIDEO MODEL, DATASET, AND UTILITIES ---
@@ -401,44 +421,34 @@ class validation_dataset(Dataset):
         self.video_names = video_names
         self.transform = transform
         self.count = sequence_length
+    
     def __len__(self):
         return len(self.video_names)
+    
     def __getitem__(self, idx):
         video_path = self.video_names[idx]
-        processed_frames = []
-        # Collect all frames with face detection and cropping
-        for frame in self.frame_extract(video_path):
+        frames = []
+        a = int(100 / self.count)
+        first_frame = np.random.randint(0, a)
+        for i, frame in enumerate(self.frame_extract(video_path)):
             results = yolo_face_detector(frame, verbose=False)
             if len(results) == 0 or len(results[0].boxes) == 0:
                 continue
-            for box_tensor in results[0].boxes.xyxy:
-                try:
-                    box = box_tensor.cpu().numpy().astype(int)
-                    left, top, right, bottom = box
-                    face_crop = frame[top:bottom, left:right, :]
-                    if face_crop is None or face_crop.size == 0:
-                        continue
-                    processed_frames.append(self.transform(face_crop))
-                except Exception as e:
-                    logger.info(f"Face crop failed (YOLO): {e}")
-                    continue
-        # Evenly select self.count frames from processed_frames using np.linspace
-        n_frames = len(processed_frames)
-        if n_frames == 0:
-            # If no frames found, create dummy tensor (should not happen ideally)
-            dummy = torch.zeros(3, im_size, im_size)
-            frames = [dummy for _ in range(self.count)]
-        elif n_frames >= self.count:
-            indices = np.linspace(0, n_frames - 1, self.count).astype(int)
-            frames = [processed_frames[i] for i in indices]
-        else:
-            # If fewer than count, repeat or pad last frame to reach self.count
-            repeats = self.count // n_frames
-            remainder = self.count % n_frames
-            frames = processed_frames * repeats + processed_frames[:remainder]
+            try:
+                box = results[0].boxes[0].xyxy[0].cpu().numpy().astype(int)
+                left, top, right, bottom = box[0], box[1], box[2], box[3]
+                frame = frame[top:bottom, left:right, :]
+            except Exception as e:
+                logger.info(f"Face crop failed (YOLO): {e}")
+                continue
+            if i % a == first_frame:
+                frames.append(self.transform(frame))
+            if len(frames) == self.count:
+                break
         frames = torch.stack(frames)
         frames = frames[:self.count]
         return frames.unsqueeze(0)
+    
     def frame_extract(self, path):
         vidObj = cv2.VideoCapture(path)
         success = True
@@ -470,6 +480,7 @@ def predict(model, img, path='./', video_file_name=""):
     output_label = idx2label.get(pred_idx, "UNCERTAIN")
     confidence = logits[:, pred_idx].item() * 100
     return [output_label, confidence, pred_idx]
+
 
 def get_accurate_model(sequence_length):
     model_name = []
@@ -595,6 +606,7 @@ def video_upload_page(request):
             return redirect('ml_app:predict')
         else:
             return render(request, "video_upload.html", {"form": form})
+
 # --- AUDIO UPLOAD PAGE VIEW ---
 def audio_upload_view(request):
     result = None
@@ -618,10 +630,10 @@ def audio_upload_view(request):
         audio_file_url = os.path.join(settings.MEDIA_URL, "uploaded_audios", audio_filename)
 
         # Format output sentence for template
-        if result and "error" not in result:
-            formatted_result = f"Detected: {result['label']} (Confidence: {result['confidence']}%)"
+        if result and isinstance(result, dict) and "error" not in result:
+            formatted_result = f"Detected: {result['label']} (Confidence: {result['confidence']:.2f}%)"
         else:
-            formatted_result = result.get("error", "Unknown error")
+            formatted_result = result.get("error", "Unknown error") if isinstance(result, dict) else "Unknown error"
     else:
         formatted_result = None
 
@@ -648,7 +660,7 @@ def prediction_details_view(request):
     identity_score = None
     if raw_identity_score is not None:
     # Scale to 0–100
-        identity_score = round(raw_identity_score * 100, 2)
+        identity_score = round(raw_identity_score * 10, 2)
     audio_result = details.get('result') if details else None
     audio_file_url = details.get('audio_file_url') if details else None
 
