@@ -33,7 +33,7 @@
 
 ---
 
-## MOdle Architecture
+## Modle Architecture
 <p align="center">
   <img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/Repo_media/Model_Structure.png" />
 </p>
