@@ -43,58 +43,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-bottom: 1px;
-    }
-    .custom-file-upload {
-        position: relative;
-        display: inline-block;
-        width: 100%;
-        padding: 3rem 1rem;
-        border: 2px dashed #6c63ff;
-        border-radius: 12px;
-        background: #fdfdff;
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #6c63ff;
-        cursor: pointer;
-        transition: border-color 0.3s ease, background 0.3s ease, transform 0.2s;
-    }
-    .custom-file-upload:hover {
-        border-color: #574bdb;
-        background: #f9f9ff;
-        transform: scale(1.02);
-    }
-    input[type="file"] {
-        display: block;
-        width: 100%;
-        padding: 3rem 1rem; /* increase height for visibility */
-        border: 2px dashed #6c63ff;
-        border-radius: 12px;
-        cursor: pointer;
-        margin-bottom: 1rem;
-        margin-top: 1rem;
-        text-align: center;
-        background: #fdfdff;
-        position: relative;
-        z-index: 2;
-        opacity: 0; /* hide default text */
-    }
-    input[type="file"]::before {
-        content: "📂 Choose a file";
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        color: #6c63ff;
-        font-weight: 600;
-        text-align: center;
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        pointer-events: none;
+        margin-bottom: 1px; /* reduced spacing */
     }
     video {
         margin-top: 1.5rem;
@@ -129,6 +78,24 @@
         background: linear-gradient(135deg, #574bdb, #7b6be8);
         box-shadow: 0 0 12px rgba(108, 99, 255, 0.6);
     }
+    #choose-file-btn {
+        background: linear-gradient(135deg, #6c63ff, #9b8cff);
+        border: none;
+        border-radius: 30px;
+        padding: 0.7rem 1.8rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.3s ease;
+        width: 100%;
+    }
+
+    #choose-file-btn:hover {
+        transform: scale(1.03);
+        background: linear-gradient(135deg, #574bdb, #7b6be8);
+        box-shadow: 0 0 12px rgba(108, 99, 255, 0.6);
+    }
     .btn-back {
         display: inline-block;
         margin-top: 1rem;
@@ -139,6 +106,20 @@
     .btn-back:hover {
         color: #453ec4;
         text-decoration: underline;
+    }
+    .loader {
+      border: 4px solid #f3f3f3; /* Light gray */
+      border-top: 4px solid #6c63ff; /* Primary color */
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 </style>
 
@@ -155,15 +136,23 @@
         <form class="form" method="POST" enctype="multipart/form-data" id="video-upload-form" action="">
             {% csrf_token %}
             <div class="form-group">
-                <label for="upload_video_file" class="custom-file-upload">📂 Choose a file</label>
-                <input type="file" id="upload_video_file" name="upload_video_file" required onchange="previewVideo(event)">
+                <button type="button" class="btn btn-primary" id="choose-file-btn">📂 Choose a video file</button>
+                <input type="file" id="upload_video_file" name="upload_video_file" required style="display:none;">
+                <span id="selected-file-name" style="margin-left:10px;">No file chosen</span>
             </div>
             <div class="form-group">
                 <label for="sequence_length">Sequence Length:</label>
                 <input type="range" id="sequence_length" name="sequence_length" min="10" max="100" step="10" value="10">
                 <span id="slider-value">10</span>
+                <span id="recommended-msg" style="color:#6c63ff; font-weight:500; margin-top:4px; display:none;">
+                    Recommended: > 70 is good for better prediction
+                </span>
             </div>
-            <button type="submit" class="btn btn-primary">Upload & Analyze</button>
+            <button type="submit" class="btn btn-primary" id="upload-btn">Upload & Analyze</button>
+            <div id="processing-loader" style="display:none; margin-top:15px;">
+                <div class="loader"></div>
+                <p style="color:#6c63ff; font-weight:600; margin-top:8px;">Processing...</p>
+            </div>
         </form>
         <a href="{% url 'ml_app:index' %}" class="btn-back">&larr; Back to Home</a>
     </div>
@@ -178,11 +167,29 @@
         const file = event.target.files[0];
         const preview = document.getElementById('video-preview');
         const source = document.getElementById('video-source');
+        const recommendedMsg = document.getElementById('recommended-msg');
         if (file) {
             source.src = URL.createObjectURL(file);
             preview.style.display = "block";
             preview.load();
+            recommendedMsg.style.display = "block"; // show message
+        } else {
+            recommendedMsg.style.display = "none"; // hide if no file
         }
     }
+    document.getElementById('video-upload-form').addEventListener('submit', function() {
+        document.getElementById('upload-btn').disabled = true;
+        document.getElementById('processing-loader').style.display = 'block';
+    });
+
+    document.getElementById('choose-file-btn').addEventListener('click', function() {
+        document.getElementById('upload_video_file').click();
+    });
+
+    document.getElementById('upload_video_file').addEventListener('change', function(event) {
+        const fileName = event.target.files[0]?.name || "No file chosen";
+        document.getElementById('selected-file-name').innerText = fileName;
+        previewVideo(event);
+    });
 </script>
 {% endblock %}
