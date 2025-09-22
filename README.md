@@ -62,7 +62,7 @@ docker run -p 8000:8000 deepfake-detector
 ---
 
 ## Demo 
-### You can watch [this Youtube video]([https://www.youtube.com/watch?v=_q16aJTXVRE](https://youtu.be/zxbPvGVXMJw)) the demo video
+### You can watch <a href = "https://youtu.be/zxbPvGVXMJw">Youtube video</a>
 <p align="center">
   <img src="https://github.com/Bibekmeher35/AI-DeepFake-Detection/blob/main/Repo_media/DEMO_Videos.gif" />
 </p> 
