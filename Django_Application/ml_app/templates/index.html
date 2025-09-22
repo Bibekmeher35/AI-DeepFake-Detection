@@ -14,7 +14,8 @@
         <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon" />
         <script
             src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-        <style type="text/tailwindcss">
+        
+    <style>
       :root {
         --primary-color: #00ff66;
         --background-color: #0d1026;
@@ -39,8 +40,6 @@
           );
         background-size: 20px 20px;
       }
-    </style>
-        <style>
       body {
         min-height: max(884px, 100dvh);
       }
@@ -59,6 +58,121 @@
         font-family: 'Poppins', 'Space Grotesk', sans-serif !important;
       }
     </style>
+    <style>
+      /* Increase text size globally for both dark and light modes, except hero section */
+      body:not(.light-mode) *:not(section.relative *):not(section.relative) {
+        font-size: 1.1rem;
+      }
+      body.light-mode *:not(section.relative *):not(section.relative) {
+        font-size: 1.1rem;
+      }
+    </style>
+    <style>
+      body.light-mode {
+        --primary-color: #0066cc;
+        --background-color: #f9fafb;
+        color: #111827;
+        background-color: var(--background-color);
+      }
+      body.light-mode .glow {
+        text-shadow: 0 0 6px var(--primary-color);
+      }
+      body.light-mode .circuit-bg {
+        background-image: radial-gradient(
+            circle at 1px 1px,
+            rgba(0, 102, 204, 0.12) 1px,
+            transparent 0
+          ),
+          radial-gradient(
+            circle at 10px 10px,
+            rgba(0, 102, 204, 0.06) 1px,
+            transparent 0
+          );
+        background-size: 20px 20px;
+      }
+      body.light-mode header,
+      body.light-mode footer,
+      body.light-mode section,
+      body.light-mode details,
+      body.light-mode .rounded-lg,
+      body.light-mode .bg-\[\#0D1026\],
+      body.light-mode .bg-\[\#0D1026\]\/50,
+      body.light-mode .bg-\[\#0D1026\]\/80,
+      body.light-mode .bg-\[\#0D1026\]\/90,
+      body.light-mode .bg-\[\#1a1d3a\],
+      body.light-mode .bg-\[\#1a1d3a\]\/50,
+      body.light-mode .bg-\[\#1a1d3a\]\/80,
+      body.light-mode .bg-\[\#1a1d3a\]\/90,
+      body.light-mode .dark,
+      body.light-mode .circuit-bg {
+        background-color: #ffffff !important;
+        color: #111827 !important;
+        background-image: none !important;
+      }
+      body.light-mode nav a,
+      body.light-mode a {
+        color: var(--primary-color) !important;
+      }
+      body.light-mode a:hover {
+        color: #004999 !important;
+      }
+      body.light-mode p,
+      body.light-mode h1,
+      body.light-mode h2,
+      body.light-mode h3,
+      body.light-mode h4,
+      body.light-mode h5,
+      body.light-mode h6,
+      body.light-mode span,
+      body.light-mode summary {
+        color: #111827 !important;
+      }
+      body.light-mode .text-gray-200,
+      body.light-mode .text-gray-300,
+      body.light-mode .text-gray-400 {
+        color: #374151 !important;
+      }
+      body.light-mode .btn {
+        background: #ffffff !important;
+        color: #0066cc !important;
+        border: 2px solid #0066cc !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+      }
+      body.light-mode .btn:hover {
+        background: #f0f9ff !important;
+        color: #004999 !important;
+        border-color: #004999 !important;
+      }
+      body.light-mode footer {
+        border-top: 1px solid #e5e7eb !important;
+      }
+      body.light-mode .shadow-lg,
+      body.light-mode .shadow-2xl {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
+      }
+      body.light-mode .hover\:text-white:hover {
+        color: #111827 !important;
+      }
+      /* Override green accents to blue in light mode */
+      body.light-mode .text-\[\#00FF66\],
+      body.light-mode .hover\:text-\[\#00FF66\]:hover,
+      body.light-mode .border-\[\#00FF66\]\/50,
+      body.light-mode .border-\[\#00FF66\]\/20,
+      body.light-mode .from-green-500,
+      body.light-mode .to-green-600,
+      body.light-mode .hover\:from-green-600:hover,
+      body.light-mode .hover\:to-green-700:hover,
+      body.light-mode .bg-gradient-to-r {
+        color: #0066cc !important;
+        border-color: #0066cc !important;
+        --tw-gradient-from: #3b82f6 !important; /* blue-500 */
+        --tw-gradient-to: #2563eb !important;   /* blue-600 */
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+      }
+      body.light-mode .glow {
+        text-shadow: 0 0 8px #0066cc !important;
+      }
+    </style>
     </head>
     <body class="text-white">
         <div
@@ -66,14 +180,17 @@
             <div class="flex-grow">
                 <header
                     class="sticky top-0 z-10 bg-[#0D1026]/80 backdrop-blur-sm">
-                    <div class="flex items-center p-4 justify-between">
+                    <div class="flex items-center p-4 justify-between w-full">
                         <h1 class="text-xl font-bold text-[#00FF66] glow">LokTruth</h1>
                         <!-- Desktop Navigation -->
-                        <nav class="hidden md:flex space-x-6 text-sm font-medium text-[#00FF66]">
+                        <nav class="hidden md:flex space-x-6 text-sm font-medium text-[#00FF66] items-center">
                             <a href="#home" class="hover:text-white transition">Home</a>
                             <a href="#about" class="hover:text-white transition">About</a>
                             <a href="#features" class="hover:text-white transition">Features</a>
                             <a href="#contact" class="hover:text-white transition">Contact</a>
+                            <button id="theme-toggle" class="p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#00FF66]">
+                              <span id="theme-toggle-text">🌙</span>
+                            </button>
                         </nav>
                         <!-- Mobile Menu Button -->
                         <button id="menu-btn" class="p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#00FF66]">
@@ -100,7 +217,7 @@
                           Deepfake Detection
                         </h1>
                         <p class="text-lg md:text-xl text-gray-200 max-w-xl z-10 relative">
-                          Detect fake media with powerful Audio and Video deepfake detection models.
+                          Detect fake media with powerful Audio, Image and Video deepfake detection models
                         </p>                
                         <div class="flex flex-wrap gap-6 justify-center z-10 relative">
                           <a href="{% url 'ml_app:audio_upload' %}"
@@ -354,6 +471,16 @@
       document.addEventListener('click', (event) => {
         if (!menuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
           mobileMenu.classList.add('hidden');
+        }
+      });
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeToggleText = document.getElementById('theme-toggle-text');
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        if (document.body.classList.contains('light-mode')) {
+          themeToggleText.textContent = '☀️';
+        } else {
+          themeToggleText.textContent = '🌙';
         }
       });
     </script>
