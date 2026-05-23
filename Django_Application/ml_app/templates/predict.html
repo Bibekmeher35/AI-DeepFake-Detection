@@ -1,153 +1,323 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Detection Results — LokTruth AI{% endblock %}
+
 {% block content %}
-<div class="container">
-  <div class="logo text-center mb-3">
-    <img src="{% static 'images/logo1.png' %}" alt="Logo">
+<style>
+  /* Full-width verdict banner */
+  .verdict-banner {
+    width: 100%;
+    padding: 2.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--card-border);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInDown .6s ease both;
+  }
+  .verdict-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: .06;
+    background: radial-gradient(ellipse at 0% 50%, var(--verdict-color, var(--accent)), transparent 60%);
+  }
+  .verdict-icon {
+    font-size: 4rem;
+    flex-shrink: 0;
+    animation: scaleIn .6s cubic-bezier(.34,1.56,.64,1) .2s both;
+  }
+  .verdict-text { flex: 1; min-width: 200px; }
+
+  /* Stat grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+  }
+
+  /* Content grid */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    padding: 0 2rem 2rem;
+  }
+  @media (max-width: 860px) {
+    .results-grid { grid-template-columns: 1fr; }
+    .stats-grid { padding: 1rem; }
+    .verdict-banner { padding: 1.5rem 1rem; gap: 1rem; }
+    .results-grid { padding: 0 1rem 1.5rem; }
+  }
+
+  /* Frames gallery */
+  .frames-gallery { 
+    display: flex; 
+    flex-wrap: nowrap; 
+    gap: 8px; 
+    overflow-x: auto; 
+    padding-bottom: 0.75rem; 
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  .frames-gallery::-webkit-scrollbar { height: 6px; }
+  .frames-gallery::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 999px; }
+  .frames-gallery::-webkit-scrollbar-thumb { background: var(--card-border-h); border-radius: 999px; }
+  
+  .frames-gallery img {
+    border-radius: 8px; object-fit: cover;
+    transition: transform .2s, box-shadow .2s;
+    cursor: zoom-in;
+    flex-shrink: 0;
+  }
+  .frames-gallery img:hover { transform: scale(1.08); box-shadow: 0 4px 20px rgba(0,0,0,.5); z-index: 2; position: relative; }
+
+  /* Action buttons row */
+  .action-row {
+    display: flex; gap: .75rem; flex-wrap: wrap;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--card-border);
+    align-items: center;
+  }
+  @media (max-width:640px) { .action-row { padding: 1rem; } }
+
+  /* No result state */
+  .empty-state { padding: 4rem 2rem; text-align: center; }
+</style>
+
+{# ══════════ No result fallback ══════════ #}
+{% if not preprocessed_images and not faces_cropped_images and not result %}
+<div class="empty-state anim-scaleIn">
+  <div style="font-size:4rem; margin-bottom:1rem; animation: bounce 2s ease-in-out infinite; color:var(--text-secondary);"><i class="ph ph-question"></i></div>
+  <h2 style="color:var(--text-primary); font-size:1.5rem; font-weight:700; margin:0 0 .75rem;">No Results Yet</h2>
+  <p style="color:var(--text-secondary); max-width:400px; margin:0 auto 2rem; line-height:1.6;">
+    Upload a video, image, or audio file to get your deepfake detection report.
+  </p>
+  <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+    <a href="{% url 'ml_app:video_upload' %}" class="lt-btn" style="width:auto; min-width:150px;"><i class="ph ph-video-camera"></i> Video</a>
+    <a href="{% url 'ml_app:audio_upload' %}" class="lt-btn" style="width:auto; min-width:150px; background:var(--card-bg); color:var(--accent); border:1px solid var(--card-border); box-shadow:none;"><i class="ph ph-waveform"></i> Audio</a>
+    <a href="{% url 'ml_app:upload_image' %}" class="lt-btn" style="width:auto; min-width:150px; background:var(--card-bg); color:var(--accent); border:1px solid var(--card-border); box-shadow:none;"><i class="ph ph-image"></i> Image</a>
   </div>
-  <hr />
+</div>
+{% endif %}
 
-  <!-- VIDEO DETECTION -->
-  {% if preprocessed_images or faces_cropped_images %}
-    {% if no_faces %}
-      <div class="alert alert-danger">
-        No faces detected. Cannot process the video.
-      </div>
-    {% else %}
-      <h3>Frames Split</h3>
-      <div id="preprocessed_images" class="col-12 mt-4 mb-2">
-        {% for each_image in preprocessed_images %}
-          <img src="{% static each_image %}" class="preprocess" width="auto" height="250" />
-        {% endfor %}
-      </div>
+{# ══════════ VIDEO DETECTION RESULTS ══════════ #}
+{% if preprocessed_images or faces_cropped_images %}
+  {% if no_faces %}
+  <div class="anim-fadeInUp" style="padding:2rem;">
+    <div class="lt-card" style="text-align:center; padding:3rem 2rem; border-color:rgba(255,77,109,.5); background:rgba(255,77,109,.05);">
+      <div style="font-size:3rem; margin-bottom:1rem; color:var(--fake-color);"><i class="ph ph-user-focus"></i></div>
+      <h2 style="color:var(--fake-color); font-size:1.25rem; font-weight:700; margin:0 0 .5rem;">No Faces Detected</h2>
+      <p style="color:var(--text-secondary); margin:0 auto; max-width:400px; line-height:1.6;">Our model could not find any faces in this video. Please try a video with clearly visible faces for accurate deepfake detection.</p>
+      <a href="{% url 'ml_app:video_upload' %}" class="lt-btn" style="margin-top:1.5rem; width:auto; display:inline-flex; min-width:200px;"><i class="ph ph-video-camera"></i> Try Another Video</a>
+    </div>
+  </div>
+  {% else %}
 
-      <h3>Face Cropped Frames</h3>
-      <div id="faces_images" class="col-12 mb-2">
-        {% for each_image in faces_cropped_images %}
-          <img src="{% static each_image %}" class="faces" width="auto" height="150" />
-        {% endfor %}
-      </div>
-
-      <div class="report-box text-center" style="border:1px solid #ccc; padding:15px; margin:20px 0; border-radius:8px; background:#fafafa;">
-        <h3>Video Detection Report</h3>
-        <video id="predict-media" width="640" height="320" controls>
-          <source src="{{ original_video }}" type="video/mp4" />
-        </video>
-
-        <!-- Button to view detailed prediction -->
-        {% if video_result or result %}
-        <div class="text-center my-3">
-            <button class="btn btn-primary" onclick="window.location.href='{% url 'ml_app:prediction_details' %}'">
-                View Detailed Prediction
-            </button>
-        </div>
-        {% endif %}
-
+  <!-- ── Verdict Banner ─────────────────────────────────────── -->
+  <div class="verdict-banner {% if output == 'REAL' %}real-verdict{% elif output == 'FAKE' %}fake-verdict{% endif %}"
+    style="--verdict-color: {% if output == 'REAL' %}var(--real-color){% elif output == 'FAKE' %}var(--fake-color){% else %}var(--warn-color){% endif %};">
+    <div class="verdict-icon">
+      {% if output == "REAL" %}<i class="ph ph-check-circle"></i>{% elif output == "FAKE" %}<i class="ph ph-warning-circle"></i>{% else %}<i class="ph ph-warning"></i>{% endif %}
+    </div>
+    <div class="verdict-text">
+      <p style="color:var(--text-secondary); font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin:0 0 .4rem;">Video Detection Verdict</p>
+      <div style="margin-bottom:.5rem; animation: verdictIn .7s cubic-bezier(.34,1.56,.64,1) .4s both;">
         {% if output == "REAL" %}
-          <h4 class="mx-auto">Final Decision:
-            <span class="badge bg-success">REAL</span>
-          </h4>
+          <span class="lt-badge-real" style="font-size:1.3rem; padding:.5rem 1.5rem;"><i class="ph ph-check-circle"></i> REAL VIDEO</span>
         {% elif output == "FAKE" %}
-          <h4 class="mx-auto">Final Decision:
-            <span class="badge bg-danger">FAKE</span>
-          </h4>
+          <span class="lt-badge-fake" style="font-size:1.3rem; padding:.5rem 1.5rem;"><i class="ph ph-warning-circle"></i> DEEPFAKE DETECTED</span>
         {% else %}
-          <h4 class="mx-auto">Final Decision:
-            <span class="badge bg-warning text-dark">{{ output }}</span>
-          </h4>
-        {% endif %}
-
-        <p><strong>Confidence:</strong> {{ confidence|floatformat:2 }}%</p>
-        <p><strong>Identity Variance Score:</strong> {{ identity_score|floatformat:2 }}%</p>
-        {% if face_summary %}
-          <p><strong>Face Summary:</strong> {{ face_summary }}</p>
+          <span class="lt-badge-unknown" style="font-size:1.3rem; padding:.5rem 1.5rem;"><i class="ph ph-warning"></i> {{ output }}</span>
         {% endif %}
       </div>
-    {% endif %}
+      {% if face_summary %}<p style="color:var(--text-secondary); font-size:.88rem; margin:0;">{{ face_summary }}</p>{% endif %}
+    </div>
+    <div style="flex-shrink:0;">
+      {% if video_result or result %}
+      <a href="{% url 'ml_app:prediction_details' %}" class="lt-btn" style="width:auto; min-width:200px; font-size:.9rem; color:#fff !important;">
+        <i class="ph ph-chart-bar"></i> Detailed Report
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Stats ──────────────────────────────────────────────── -->
+  <div class="stats-grid">
+    <div class="lt-stat anim-scaleIn delay-1">
+      <p class="lt-stat-label">Confidence</p>
+      <p class="lt-stat-value">
+        <span data-count="{{ confidence }}" data-decimals="1">{{ confidence|floatformat:1 }}</span>%
+      </p>
+      <div class="lt-meter-wrap" style="margin-top:.5rem;">
+        <div class="lt-meter-bar {% if output == 'REAL' %}meter-real{% elif output == 'FAKE' %}meter-fake{% else %}meter-warn{% endif %}"
+             style="--pct: {{ confidence }}%;"></div>
+      </div>
+    </div>
+    <div class="lt-stat anim-scaleIn delay-2">
+      <p class="lt-stat-label">Identity Variance</p>
+      <p class="lt-stat-value"><span data-count="{{ identity_score }}" data-decimals="1">{{ identity_score|floatformat:1 }}</span>%</p>
+      <div class="lt-meter-wrap" style="margin-top:.5rem;">
+        <div class="lt-meter-bar meter-warn" style="--pct: {{ identity_score }}%;"></div>
+      </div>
+    </div>
+    <div class="lt-stat anim-scaleIn delay-3">
+      <p class="lt-stat-label">Frames Analyzed</p>
+      <p class="lt-stat-value">{{ preprocessed_images|length }}</p>
+    </div>
+    <div class="lt-stat anim-scaleIn delay-4">
+      <p class="lt-stat-label">Faces Detected</p>
+      <p class="lt-stat-value">{{ faces_cropped_images|length }}</p>
+    </div>
+  </div>
+
+  <!-- ── Content Grid ───────────────────────────────────────── -->
+  <div class="results-grid">
+
+    <!-- Video player -->
+    <div class="lt-card reveal" style="padding:0; overflow:hidden;">
+      <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--card-border);">
+        <p style="color:var(--accent); font-weight:700; font-size:.9rem; margin:0;"><i class="ph ph-video-camera"></i> Original Video</p>
+      </div>
+      <video id="predict-media" controls preload="metadata"
+             style="width:100%; display:block; max-height:320px; background:#000;">
+        <source src="{{ original_video }}" type="video/mp4">
+      </video>
+    </div>
+
+    <!-- Cropped faces -->
+    <div class="lt-card reveal delay-2" style="padding:1.25rem;">
+      <p style="color:var(--accent); font-weight:700; font-size:.9rem; margin:0 0 1rem;"><i class="ph ph-user-focus"></i> Face Crops</p>
+      <div class="frames-gallery">
+        {% for each_image in faces_cropped_images %}
+          <img src="{% static each_image %}" alt="Face" style="height:80px; width:80px;">
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Preprocessed frames (full width) -->
+    <div class="lt-card reveal" style="grid-column:1/-1; padding:1.25rem;">
+      <p style="color:var(--accent); font-weight:700; font-size:.9rem; margin:0 0 1rem;"><i class="ph ph-film-strip"></i> Extracted Frames</p>
+      <div class="frames-gallery">
+        {% for each_image in preprocessed_images %}
+          <img src="{% static each_image %}" alt="Frame" style="height:110px; width:auto;">
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
+{% endif %}
+
+{# ══════════ AUDIO DETECTION RESULTS ══════════ #}
+{% if result %}
+<div style="padding: {% if preprocessed_images or faces_cropped_images %}0 2rem 2rem{% else %}2rem{% endif %};">
+
+  <!-- Verdict banner for audio-only -->
+  {% if not preprocessed_images and not faces_cropped_images %}
+  <div class="verdict-banner" style="margin-bottom:1.5rem; border-radius:16px;
+    --verdict-color: {% if result.label == 'REAL' %}var(--real-color){% elif result.label == 'FAKE' %}var(--fake-color){% else %}var(--warn-color){% endif %};">
+    <div class="verdict-icon">{% if result.label == "REAL" %}<i class="ph ph-check-circle"></i>{% elif result.label == "FAKE" %}<i class="ph ph-warning-circle"></i>{% else %}<i class="ph ph-warning"></i>{% endif %}</div>
+    <div class="verdict-text">
+      <p style="color:var(--text-secondary); font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin:0 0 .4rem;">Audio Detection Verdict</p>
+      <div style="animation: verdictIn .7s cubic-bezier(.34,1.56,.64,1) .3s both;">
+        {% if result.label == "REAL" %}
+          <span class="lt-badge-real" style="font-size:1.3rem; padding:.5rem 1.5rem;"><i class="ph ph-check-circle"></i> REAL AUDIO</span>
+        {% elif result.label == "FAKE" %}
+          <span class="lt-badge-fake" style="font-size:1.3rem; padding:.5rem 1.5rem;"><i class="ph ph-warning-circle"></i> FAKE AUDIO</span>
+        {% else %}
+          <span class="lt-badge-unknown" style="font-size:1.3rem; padding:.5rem 1.5rem;"><i class="ph ph-warning"></i> {{ result.label }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="lt-card anim-fadeInUp" style="padding:1.25rem; margin-bottom:0;">
+    <p style="color:var(--accent); font-weight:700; font-size:.9rem; margin:0 0 1rem;"><i class="ph ph-music-notes"></i> Audio Report</p>
   {% endif %}
 
-  <!-- AUDIO DETECTION -->
-  {% if result %}
-    <div class="report-box text-center" style="border:1px solid #ccc; padding:15px; margin:20px 0; border-radius:8px; background:#fafafa;">
-      <h3>Audio Detection Report</h3>
-      {% if audio_file_url %}
-        <audio controls style="width:320px;">
-          <source src="{{ audio_file_url }}" type="audio/wav">
-          Your browser does not support the audio element.
-        </audio>
-      {% endif %}
-
-      {% if result.label == "REAL" %}
-        <h4 class="mx-auto">Final Decision:
-          <span class="badge bg-success">REAL</span>
-        </h4>
-      {% elif result.label == "FAKE" %}
-        <h4 class="mx-auto">Final Decision:
-          <span class="badge bg-danger">FAKE</span>
-        </h4>
-      {% else %}
-        <h4 class="mx-auto">Final Decision:
-          <span class="badge bg-warning text-dark">{{ result.label }}</span>
-        </h4>
-      {% endif %}
-      <p><strong>Confidence:</strong> {{ result.confidence|floatformat:2 }}%</p>
+    <div class="stats-grid" style="padding:0; {% if not preprocessed_images and not faces_cropped_images %}margin-top:1.5rem;{% endif %}">
+      <div class="lt-stat anim-scaleIn">
+        <p class="lt-stat-label">Audio Verdict</p>
+        <div class="lt-stat-value" style="font-size:1rem; margin-top:.3rem;">
+          {% if result.label == "REAL" %}<span class="lt-badge-real"><i class="ph ph-check-circle"></i> REAL</span>
+          {% elif result.label == "FAKE" %}<span class="lt-badge-fake"><i class="ph ph-warning-circle"></i> FAKE</span>
+          {% else %}<span class="lt-badge-unknown"><i class="ph ph-warning"></i> {{ result.label }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="lt-stat anim-scaleIn delay-1">
+        <p class="lt-stat-label">Confidence</p>
+        <p class="lt-stat-value"><span data-count="{{ result.confidence }}" data-decimals="1">{{ result.confidence|floatformat:1 }}</span>%</p>
+        <div class="lt-meter-wrap" style="margin-top:.5rem;">
+          <div class="lt-meter-bar {% if result.label == 'REAL' %}meter-real{% elif result.label == 'FAKE' %}meter-fake{% else %}meter-warn{% endif %}"
+               style="--pct: {{ result.confidence }}%;"></div>
+        </div>
+      </div>
     </div>
+
+    {% if audio_file_url %}
+    <div style="{% if preprocessed_images or faces_cropped_images %}margin-top:1rem;{% else %}margin-top:1.5rem;{% endif %}">
+      <audio controls style="width:100%; border-radius:12px;">
+        <source src="{{ audio_file_url }}" type="audio/wav">
+      </audio>
+    </div>
+    {% endif %}
+
+  {% if preprocessed_images or faces_cropped_images %}</div>{% endif %}
+</div>
+{% endif %}
+
+<!-- ── Action row ─────────────────────────────────────────── -->
+<div class="action-row">
+  <a href="{% url 'ml_app:index' %}" class="lt-back">← Home</a>
+  {% if preprocessed_images or faces_cropped_images %}
+  <a href="{% url 'ml_app:video_upload' %}" class="lt-back" style="margin-left:.5rem;"><i class="ph ph-video-camera"></i> New Video</a>
+  {% endif %}
+  {% if result %}
+  <a href="{% url 'ml_app:audio_upload' %}" class="lt-back" style="margin-left:.5rem;"><i class="ph ph-waveform"></i> New Audio</a>
   {% endif %}
 </div>
+
 {% endblock %}
 
 {% block js_cripts %}
 <script src="{% static 'js/face-api.min.js' %}"></script>
 <script>
-  $(document).ready(function () {
-    const video = document.getElementById("predict-media");
+  $(document).ready(function(){
+    var video = document.getElementById("predict-media");
     if (!video) return;
-
     Promise.all([
       faceapi.nets.ssdMobilenetv1.loadFromUri('/static/json'),
       faceapi.nets.tinyFaceDetector.loadFromUri("/static/json")
     ]);
-
-    var detectionTimeout;
-    video.addEventListener("playing", () => {
+    var timer;
+    video.addEventListener("playing", function(){
       var canvas;
       if ($('canvas').length < 1) {
         canvas = faceapi.createCanvasFromMedia(video);
-        canvas.style.top = video.offsetTop + "px";
-        canvas.style.left = video.offsetLeft + "px";
-        document.body.append(canvas);
+        canvas.style.cssText = "position:absolute;top:"+video.offsetTop+"px;left:"+video.offsetLeft+"px;";
+        document.body.appendChild(canvas);
       }
-
-      const displaySize = { width: video.width, height: video.height - 60 };
-      faceapi.matchDimensions(canvas, displaySize);
-
-      detectionTimeout = setInterval(async () => {
-        const detections = await faceapi.detectAllFaces(video);
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-        canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-        canvas.style.top = video.offsetTop + "px";
-        canvas.style.left = video.offsetLeft + "px";
-
-        resizedDetections.forEach((resultBox, i) => {
-          var result = '{{ output|default:"" }}';
-          var confidence = '{{ confidence|default:"" }}';
-          var drawOptions = { label: result.concat("  " , confidence , "%") };
-          if (result == 'REAL'){
-            drawOptions["boxColor"] = "#0f0";
-          }
-          else if (result == 'FAKE'){
-            drawOptions["boxColor"] = "#f00";
-          }
-          var box = { x: resizedDetections[i].box.x, y: resizedDetections[i].box.y, height: 100, width: 100 };
-          const drawBox = new faceapi.draw.DrawBox(box, drawOptions);
-          drawBox.draw(canvas);
+      var ds = { width: video.width, height: video.height - 60 };
+      faceapi.matchDimensions(canvas, ds);
+      timer = setInterval(async function(){
+        var d = await faceapi.detectAllFaces(video);
+        var r = faceapi.resizeResults(d, ds);
+        canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+        r.forEach(function(_, i){
+          var out = '{{ output|default:"" }}';
+          var conf= '{{ confidence|default:"" }}';
+          var opts= { label: out + "  " + conf + "%" };
+          if (out==='REAL') opts.boxColor="#00ff66";
+          else if (out==='FAKE') opts.boxColor="#ff4d6d";
+          new faceapi.draw.DrawBox({ x:r[i].box.x, y:r[i].box.y, height:100, width:100 }, opts).draw(canvas);
         });
       }, 1);
     });
-
-    video.addEventListener("paused", () => {
-      clearTimeout(detectionTimeout);
-    });
+    video.addEventListener("paused", function(){ clearInterval(timer); });
   });
 </script>
 {% endblock %}

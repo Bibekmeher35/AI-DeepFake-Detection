@@ -1,13 +1,85 @@
 {% extends "base.html" %}
+{% block title %}Audio Result — LokTruth AI{% endblock %}
+
 {% block content %}
-<h2>Detection Result</h2>
+<!-- Full-screen verdict page -->
+<div style="min-height:calc(100dvh - var(--nav-h)); display:flex; flex-direction:column; justify-content:center; align-items:center; padding:2rem; text-align:center; position:relative; overflow:hidden;">
 
-{% if result %}
-  <p><strong>Prediction:</strong> {{ result.label }}</p>
-  <p><strong>Confidence:</strong> {{ result.confidence }}%</p>
-{% else %}
-  <p>No result available.</p>
-{% endif %}
+  <!-- Background glow -->
+  <div style="position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(ellipse at 50% 30%,
+      {% if result %}
+        {% if result.label == 'REAL' %}rgba(0,255,102,0.12){% elif result.label == 'FAKE' %}rgba(255,77,109,0.12){% else %}rgba(251,191,36,0.10){% endif %}
+      {% else %}rgba(0,255,102,0.06){% endif %}
+    0%, transparent 65%);"></div>
 
-<a href="{% url 'ml_app:audio_upload' %}">Analyze another file</a>
+  {% if result %}
+  <!-- Big icon -->
+  <div style="font-size:5rem; margin-bottom:1rem; animation: scaleIn .6s cubic-bezier(.34,1.56,.64,1) both; filter: drop-shadow(0 0 30px {% if result.label == 'REAL' %}rgba(0,255,102,.6){% else %}rgba(255,77,109,.6){% endif %});">
+    {% if result.label == "REAL" %}<i class="ph ph-check-circle"></i>{% elif result.label == "FAKE" %}<i class="ph ph-warning-circle"></i>{% else %}<i class="ph ph-warning"></i>{% endif %}
+  </div>
+
+  <!-- Verdict -->
+  <div style="animation: verdictIn .7s cubic-bezier(.34,1.56,.64,1) .2s both; margin-bottom:1rem;">
+    {% if result.label == "REAL" %}
+      <span class="lt-badge-real" style="font-size:1.5rem; padding:.65rem 2rem;"><i class="ph ph-check-circle"></i> REAL AUDIO</span>
+    {% elif result.label == "FAKE" %}
+      <span class="lt-badge-fake" style="font-size:1.5rem; padding:.65rem 2rem;"><i class="ph ph-warning-circle"></i> FAKE AUDIO</span>
+    {% else %}
+      <span class="lt-badge-unknown" style="font-size:1.5rem; padding:.65rem 2rem;"><i class="ph ph-warning"></i> {{ result.label }}</span>
+    {% endif %}
+  </div>
+
+  <p style="color:var(--text-secondary); font-size:.95rem; max-width:440px; line-height:1.6; margin:0 0 2rem; animation: fadeInUp .5s ease .4s both;">
+    {% if result.label == "REAL" %}
+      Our model analyzed the audio and determined it was produced by a real human voice with high confidence.
+    {% elif result.label == "FAKE" %}
+      Our model detected artifacts consistent with AI-generated or cloned voice synthesis.
+    {% else %}
+      The audio confidence was insufficient to make a clear determination. Try with a cleaner recording.
+    {% endif %}
+  </p>
+
+  <!-- Stats cards -->
+  <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem; animation: fadeInUp .5s ease .5s both; width:100%; max-width:500px;">
+    <div class="lt-stat" style="flex:1; min-width:150px;">
+      <p class="lt-stat-label">Confidence Score</p>
+      <p class="lt-stat-value"><span data-count="{{ result.confidence }}" data-decimals="1">{{ result.confidence }}</span>%</p>
+      <div class="lt-meter-wrap" style="margin-top:.5rem;">
+        <div class="lt-meter-bar {% if result.label == 'REAL' %}meter-real{% elif result.label == 'FAKE' %}meter-fake{% else %}meter-warn{% endif %}"
+             style="--pct: {{ result.confidence }}%;"></div>
+      </div>
+    </div>
+    <div class="lt-stat" style="flex:1; min-width:150px;">
+      <p class="lt-stat-label">Detection Model</p>
+      <p class="lt-stat-value" style="font-size:1rem; margin-top:.3rem;">LSTM Audio</p>
+      <p style="color:var(--text-muted); font-size:.72rem; margin:.2rem 0 0;">Mel-spectrogram analysis</p>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div style="display:flex; gap:.75rem; flex-wrap:wrap; justify-content:center; animation: fadeInUp .5s ease .6s both;">
+    <a href="{% url 'ml_app:audio_upload' %}" class="lt-btn" style="width:auto; min-width:180px;">
+      <i class="ph ph-arrows-clockwise"></i> Analyze Another File
+    </a>
+    <a href="{% url 'ml_app:index' %}" class="lt-btn" style="width:auto; min-width:140px; background:var(--card-bg); color:var(--accent); border:1px solid var(--card-border); box-shadow:none;">
+      ← Home
+    </a>
+  </div>
+
+  {% else %}
+  <!-- No result state -->
+  <div style="animation: scaleIn .5s ease both;">
+    <div style="font-size:4rem; margin-bottom:1rem; color:var(--text-secondary);"><i class="ph ph-question"></i></div>
+    <h2 style="color:var(--text-primary); font-size:1.4rem; font-weight:700; margin:0 0 .75rem;">No Result Available</h2>
+    <p style="color:var(--text-secondary); max-width:400px; margin:0 auto 2rem; line-height:1.6;">
+      It looks like no audio file was analyzed. Please upload a .wav or .mp3 file to get started.
+    </p>
+    <a href="{% url 'ml_app:audio_upload' %}" class="lt-btn" style="width:auto; min-width:200px; display:inline-flex;">
+      <i class="ph ph-waveform"></i> Upload Audio
+    </a>
+  </div>
+  {% endif %}
+
+</div>
 {% endblock %}

@@ -1,363 +1,510 @@
 {% load static %}
-{% block content %}
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <link crossorigin href="https://fonts.gstatic.com/" rel="preconnect" />
-        <link
-            as="style"
-            href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Space+Grotesk%3Awght%40400%3B500%3B700"
-            onload="this.rel='stylesheet'"
-            rel="stylesheet" />
-        <title>LokTruth AI Deepfake Detection</title>
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-        <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon" />
-        <script
-            src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-        <style type="text/tailwindcss">
-      :root {
-        --primary-color: #00ff66;
-        --background-color: #0d1026;
-      }
-      body {
-        background-color: var(--background-color);
-        font-family: "Space Grotesk", sans-serif;
-      }
-      .glow {
-        text-shadow: 0 0 8px var(--primary-color);
-      }
-      .circuit-bg {
-        background-image: radial-gradient(
-            circle at 1px 1px,
-            rgba(0, 255, 102, 0.2) 1px,
-            transparent 0
-          ),
-          radial-gradient(
-            circle at 10px 10px,
-            rgba(0, 255, 102, 0.1) 1px,
-            transparent 0
-          );
-        background-size: 20px 20px;
-      }
-    </style>
-        <style>
-      body {
-        min-height: max(884px, 100dvh);
-      }
-      @keyframes wave {
-        0%, 100% { transform: rotate(0deg); }
-        25% { transform: rotate(5deg); }
-        50% { transform: rotate(0deg); }
-        75% { transform: rotate(-5deg); }
-      }
-      .animate-\[wave_1s_infinite\] {
-        display: inline-block;
-        transform-origin: 70% 70%;
-        animation: wave 1s infinite;
-      }
-      .font-poppins {
-        font-family: 'Poppins', 'Space Grotesk', sans-serif !important;
-      }
-    </style>
-    </head>
-    <body class="text-white">
-        <div
-            class="relative flex h-auto min-h-screen w-full flex-col bg-[#0D1026] dark justify-between group/design-root overflow-x-hidden circuit-bg">
-            <div class="flex-grow">
-                <header
-                    class="sticky top-0 z-10 bg-[#0D1026]/80 backdrop-blur-sm">
-                    <div class="flex items-center p-4 justify-between">
-                        <h1 class="text-xl font-bold text-[#00FF66] glow">LokTruth</h1>
-                        <!-- Desktop Navigation -->
-                        <nav class="hidden md:flex space-x-6 text-sm font-medium text-[#00FF66]">
-                            <a href="#home" class="hover:text-white transition">Home</a>
-                            <a href="#about" class="hover:text-white transition">About</a>
-                            <a href="#features" class="hover:text-white transition">Features</a>
-                            <a href="#contact" class="hover:text-white transition">Contact</a>
-                        </nav>
-                        <!-- Mobile Menu Button -->
-                        <button id="menu-btn" class="p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#00FF66]">
-                            <svg class="w-6 h-6 text-[#00FF66]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                    </div>
-                    <!-- Mobile Dropdown Menu -->
-                    <div id="mobile-menu" class="hidden flex-col absolute right-4 top-16 w-40 bg-[#1a1d3a] rounded-lg shadow-lg z-20">
-                        <a href="#home" class="block px-4 py-2 text-sm font-medium text-[#00FF66] hover:text-white transition">Home</a>
-                        <a href="#about" class="block px-4 py-2 text-sm font-medium text-[#00FF66] hover:text-white transition">About</a>
-                        <a href="#features" class="block px-4 py-2 text-sm font-medium text-[#00FF66] hover:text-white transition">Features</a>
-                        <a href="#contact" class="block px-4 py-2 text-sm font-medium text-[#00FF66] hover:text-white transition">Contact</a>
-                    </div>
-                </header>
-                <main class="p-4">
-                    <!-- Hero Section -->
-                    <section class="relative flex flex-col items-center justify-center text-center my-12">
-                      <div class="flex flex-col items-center gap-6 bg-[#1a1d3a]/80 border border-[#00FF66]/50 rounded-2xl shadow-2xl p-10 backdrop-blur-md relative overflow-hidden">
-                        <!-- Animated gradient overlay -->
-                        <div class="absolute inset-0 bg-gradient-to-r from-green-500 via-green-400 to-green-500 opacity-20 animate-[pulse_5s_infinite] rounded-2xl"></div>
-                        <h1 class="text-4xl md:text-5xl font-bold text-[#00FF66] glow animate-pulse z-10 relative">
-                          Deepfake Detection
-                        </h1>
-                        <p class="text-lg md:text-xl text-gray-200 max-w-xl z-10 relative">
-                          Detect fake media with powerful Audio and Video deepfake detection models.
-                        </p>                
-                        <div class="flex flex-wrap gap-6 justify-center z-10 relative">
-                          <a href="{% url 'ml_app:audio_upload' %}"
-                             class="bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg px-12 py-4 min-w-[200px] text-center rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 hover:from-green-600 hover:to-green-700 btn" role="button" aria-label="Audio Detection">
-                            Audio
-                          </a>
-                          <a href="{% url 'ml_app:upload_image' %}"
-                           class="bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg px-12 py-4 min-w-[200px] text-center rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 hover:from-green-600 hover:to-green-700 btn" role="button" aria-label="Image Detection">
-                           Image
-                          </a>
-                          <a href="{% url 'ml_app:video_upload' %}"
-                             class="bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-lg px-12 py-4 min-w-[200px] text-center rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300 hover:from-green-600 hover:to-green-700 btn" role="button" aria-label="Video Detection">
-                            Video
-                          </a>
-                        </div>
-                      </div>
-                    </section>
-                    <div id="about" class="flex flex-col gap-3 mt-6">
-                        <details
-                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group"
-                            open>
-                            <summary
-                                class="flex cursor-pointer items-center justify-between p-4 list-none">
-                                <h3
-                                    class="text-base font-medium text-[#00FF66]">
-                                    Internet is Mandatory
-                                </h3>
-                                <div
-                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
-                                    <svg
-                                        fill="currentColor"
-                                        height="20px"
-                                        viewBox="0 0 256 256"
-                                        width="20px"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                                    </svg>
-                                </div>
-                            </summary>
-                            <div class="px-4 pb-4 text-gray-300 text-sm">
-                                An active internet connection is required for
-                                the app to
-                                function correctly and analyze files with our
-                                latest AI models.
-                            </div>
-                        </details>
-                        <details
-                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group">
-                            <summary
-                                class="flex cursor-pointer items-center justify-between p-4 list-none">
-                                <h3
-                                    class="text-base font-medium text-[#00FF66]">
-                                    How to use?
-                                </h3>
-                                <div
-                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
-                                    <svg
-                                        fill="currentColor"
-                                        height="20px"
-                                        viewBox="0 0 256 256"
-                                        width="20px"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                                    </svg>
-                                </div>
-                            </summary>
-                            <div class="px-4 pb-4 text-gray-300 text-sm">
-                                Simply select 'Audio' or 'Video', tap the
-                                'Upload File' button,
-                                and choose the content you want to analyze.
-                                We'll handle the
-                                rest!
-                            </div>
-                        </details>
-                        <details
-                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group">
-                            <summary
-                                class="flex cursor-pointer items-center justify-between p-4 list-none">
-                                <h3
-                                    class="text-base font-medium text-[#00FF66]">Deepfake?</h3>
-                                <div
-                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
-                                    <svg
-                                        fill="currentColor"
-                                        height="20px"
-                                        viewBox="0 0 256 256"
-                                        width="20px"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                                    </svg>
-                                </div>
-                            </summary>
-                            <div class="px-4 pb-4 text-gray-300 text-sm">
-                                A deepfake is a synthetic media in which a
-                                person in an existing
-                                image or video is replaced with someone else's
-                                likeness using
-                                artificial intelligence.
-                            </div>
-                        </details>
-                        <details
-                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group">
-                            <summary
-                                class="flex cursor-pointer items-center justify-between p-4 list-none">
-                                <h3
-                                    class="text-base font-medium text-[#00FF66]">
-                                    Deepfake VS Real?
-                                </h3>
-                                <div
-                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
-                                    <svg
-                                        fill="currentColor"
-                                        height="20px"
-                                        viewBox="0 0 256 256"
-                                        width="20px"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                                    </svg>
-                                </div>
-                            </summary>
-                            <div class="px-4 pb-4 text-gray-300 text-sm">
-                                Our service analyzes subtle artifacts and
-                                inconsistencies in
-                                audio and video files that are often invisible
-                                to the naked eye
-                                or ear, helping distinguish authentic content
-                                from AI-generated
-                                fakes.
-                            </div>
-                        </details>
-                        <details
-                            class="rounded-lg bg-[#1a1d3a]/50 backdrop-blur-sm group">
-                            <summary
-                                class="flex cursor-pointer items-center justify-between p-4 list-none">
-                                <h3
-                                    class="text-base font-medium text-[#00FF66]">
-                                    Advantages!
-                                </h3>
-                                <div
-                                    class="text-[#00FF66] group-open:rotate-180 transition-transform duration-300">
-                                    <svg
-                                        fill="currentColor"
-                                        height="20px"
-                                        viewBox="0 0 256 256"
-                                        width="20px"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                                    </svg>
-                                </div>
-                            </summary>
-                            <div class="px-4 pb-4 text-gray-300 text-sm">
-                                Protect yourself from misinformation, verify the
-                                authenticity of
-                                media, and ensure the integrity of digital
-                                content with our
-                                powerful detection tools.
-                            </div>
-                        </details>
-                    </div>
-                    <div id="contact" class="mt-8 text-center">
-                        <h3 class="text-lg font-bold text-white mb-4">LEGAL</h3>
-                        <div class="flex flex-col items-center gap-3">
-                            <a
-                                class="text-gray-400 hover:text-[#00FF66] transition-colors"
-                                href="#">Privacy Policy</a>
-                            <a
-                                class="text-gray-400 hover:text-[#00FF66] transition-colors"
-                                href="#">Terms &amp; Conditions</a>
-                            <a
-                                class="text-gray-400 hover:text-[#00FF66] transition-colors"
-                                href="#">Sitemap</a>
-                        </div>
-                    </div>
-                </main>
-            </div>
-            <!-- Footer -->
-            <footer class="sticky bottom-0 bg-[#0D1026]/90 backdrop-blur-md">
-              <div class="flex flex-col items-center border-t border-[#00FF66]/20 px-4 py-8 gap-6">
-                <h3 class="text-lg font-bold text-white mb-2 relative group">
-                  Contact Us
-                  <span class="absolute bottom-0 left-0 w-0 h-1 bg-[#00FF66] group-hover:w-full transition-all duration-300"></span>
-                </h3>
-                <div class="flex justify-center gap-10 text-[#00FF66] text-2xl">
-                  <!-- Instagram -->
-                  <a href="#" aria-label="Instagram" class="hover:text-white transition transform hover:scale-110">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
-                      <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5zm8.75 2.25a.75.75 0 0 1 .102 1.493L16.25 7a.75.75 0 0 1-.102-1.493L16.25 5.75zm-4.25 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
-                    </svg>
-                  </a>
-                  <!-- Twitter -->
-                  <a href="#" aria-label="Twitter" class="hover:text-white transition transform hover:scale-110">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 512 512" class="w-6 h-6">
-                      <path d="M459.4 151.7c.32 4.54.32 9.09.32 13.63 0 138.72-105.58 298.56-298.56 298.56-59.5 0-114.87-17.22-161.29-46.72 8.44.97 16.89 1.29 25.45 1.29 49.19 0 94.45-16.89 130.36-45.53-46.1-1.04-84.8-31.2-98.03-72.92 6.5 1.04 13.17 1.71 20.11 1.71 9.71 0 19.17-1.29 28.18-3.67-48.13-9.7-84.27-52.03-84.27-102.97v-1.29c14.08 7.83 30.21 12.51 47.43 13.03-28.11-18.81-46.5-50.8-46.5-87.06 0-19.17 5.17-37.06 14.08-52.48 51.14 62.8 127.3 104.16 213.12 108.49-1.71-7.83-2.62-15.99-2.62-24.15 0-57.78 46.85-104.63 104.63-104.63 30.21 0 57.48 12.51 76.6 32.75 23.7-4.54 46.1-13.17 66.3-25.45-7.83 24.46-24.46 45.03-46.1 57.78 21.11-2.31 41.09-8.11 59.74-16.34-14.08 20.79-31.82 39.18-52.19 53.86z"/>
-                    </svg>
-                  </a>
-                  <!-- LinkedIn -->
-                  <a href="#" aria-label="LinkedIn" class="hover:text-white transition transform hover:scale-110">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 448 512" class="w-6 h-6">
-                      <path d="M100.28 448H7.4V148.9h92.88zm-46.44-340a53.64 53.64 0 1 1 53.6-53.64 53.64 53.64 0 0 1-53.6 53.64zM447.9 448h-92.68V302.4c0-34.7-12.42-58.4-43.48-58.4-23.7 0-37.8 15.9-44 31.3-2.3 5.6-2.9 13.4-2.9 21.2V448h-92.6s1.2-261.2 0-288h92.6v40.8c12.3-19 34.3-46.1 83.5-46.1 61 0 106.8 39.8 106.8 125.4V448z"/>
-                    </svg>
-                  </a>
-                  <!-- Facebook -->
-                  <a href="#" aria-label="Facebook" class="hover:text-white transition transform hover:scale-110">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
-                      <path d="M22.675 0h-21.35C.6 0 0 .6 0 1.325v21.351C0 23.4.6 24 1.325 24H12.82v-9.294H9.692V11.31h3.128V8.412c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.464.099 2.797.143v3.24l-1.918.001c-1.504 0-1.796.715-1.796 1.763v2.31h3.588l-.467 3.396h-3.121V24h6.116C23.4 24 24 23.4 24 22.675V1.325C24 .6 23.4 0 22.675 0z"/>
-                    </svg>
-                  </a>
-                  <!-- YouTube -->
-                  <a href="#" aria-label="YouTube" class="hover:text-white transition transform hover:scale-110">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 576 512" class="w-6 h-6">
-                      <path d="M549.655 124.083c-6.281-23.65-24.79-42.158-48.44-48.44C465.534 64 288 64 288 64s-177.534 0-213.215 11.643c-23.65 6.281-42.158 24.79-48.44 48.44C16 160.765 16 256 16 256s0 95.235 10.345 131.917c6.281 23.65 24.79 42.158 48.44 48.44C110.466 448 288 448 288 448s177.534 0 213.215-11.643c23.65-6.281 42.158-24.79 48.44-48.44C560 351.235 560 256 560 256s0-95.235-10.345-131.917zM232 334V178l142 78-142 78z"/>
-                    </svg>
-                  </a>
-                </div>
-                <div class="flex items-center justify-center gap-2 text-xs text-gray-400 pb-4 mt-2 font-poppins font-bold">
-                  <span>Designed in INDIA</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" class="h-6 w-auto">
-                    <rect width="1200" height="800" fill="#FF9933"/>
-                    <rect y="267" width="1200" height="266" fill="#FFFFFF"/>
-                    <rect y="533" width="1200" height="267" fill="#138808"/>
-                    <circle cx="600" cy="400" r="80" fill="#000088"/>
-                    <g stroke="#000088" stroke-width="8">
-                      <line x1="600" y1="320" x2="600" y2="480"/>
-                      <line x1="520" y1="400" x2="680" y2="400"/>
-                      <line x1="550" y1="350" x2="650" y2="450"/>
-                      <line x1="650" y1="350" x2="550" y2="450"/>
-                    </g>
-                  </svg>
-                </div>
-              </div>
-            </footer>
-        </div>
-</div>
-    <script>
-      const menuBtn = document.getElementById('menu-btn');
-      const mobileMenu = document.getElementById('mobile-menu');
-      menuBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-      });
-      mobileMenu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-          mobileMenu.classList.add('hidden');
-        });
-      });
-      // Close dropdown when clicking outside menu-btn or mobileMenu
-      document.addEventListener('click', (event) => {
-        if (!menuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
-          mobileMenu.classList.add('hidden');
-        }
-      });
-    </script>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LokTruth AI — Real-time deepfake detection for audio, images, and video using advanced deep learning.">
+  <title>LokTruth AI — Deepfake Detection</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="icon" href="{% static 'favicon.ico' %}?v=2" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
+  <style>
+    :root {
+      --accent:#00FF66; --accent-dim:rgba(0,255,102,.18); --accent-hover:#00cc52;
+      --bg:#080e1f; --bg2:#0d1530;
+      --card-bg:rgba(13,21,48,.82); --card-border:rgba(0,255,102,.22); --card-border-h:rgba(0,255,102,.55);
+      --text-primary:#f0f4ff; --text-secondary:#8892b0; --text-muted:#4a5568;
+      --shadow:0 8px 40px rgba(0,0,0,.6); --shadow-glow:0 0 40px rgba(0,255,102,.2);
+      --nav-h:64px; --real-color:#00FF66; --fake-color:#ff4d6d;
+    }
+    body.light-mode {
+      --accent:#0055cc; --accent-dim:rgba(0,85,204,.12); --accent-hover:#003d99;
+      --bg:#f0f4ff; --bg2:#e8eeff;
+      --card-bg:rgba(255,255,255,.92); --card-border:rgba(0,85,204,.20); --card-border-h:rgba(0,85,204,.50);
+      --text-primary:#0f172a; --text-secondary:#475569; --text-muted:#94a3b8;
+      --shadow:0 8px 40px rgba(0,0,0,.10); --shadow-glow:0 0 40px rgba(0,85,204,.15);
+      --real-color:#16a34a; --fake-color:#dc2626;
+    }
+    *, *::before, *::after { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family:'Space Grotesk',sans-serif;
+      background:var(--bg); color:var(--text-primary);
+      margin:0; overflow-x:hidden;
+      transition:background .4s, color .4s;
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,255,102,.08) 0%, transparent 60%),
+        radial-gradient(circle at 1px 1px, rgba(0,255,102,.12) 1px, transparent 0),
+        radial-gradient(circle at 11px 11px, rgba(0,255,102,.05) 1px, transparent 0);
+      background-size:auto, 22px 22px, 22px 22px;
+      pointer-events:none; z-index:0;
+    }
+    body.light-mode::before {
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,85,204,.06) 0%, transparent 60%),
+        radial-gradient(circle at 1px 1px, rgba(0,85,204,.08) 1px, transparent 0),
+        radial-gradient(circle at 11px 11px, rgba(0,85,204,.04) 1px, transparent 0);
+      background-size:auto, 22px 22px, 22px 22px;
+    }
+
+    @keyframes fadeInUp  { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:none} }
+    @keyframes fadeInDown{ from{opacity:0;transform:translateY(-24px)} to{opacity:1;transform:none} }
+    @keyframes scaleIn   { from{opacity:0;transform:scale(.8) translateY(16px)} to{opacity:1;transform:none} }
+    @keyframes orbSpin   { to{transform:rotate(360deg)} }
+    @keyframes bounce    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    @keyframes glowText  { 0%,100%{text-shadow:0 0 20px rgba(0,255,102,.4)} 50%{text-shadow:0 0 50px rgba(0,255,102,.8), 0 0 80px rgba(0,255,102,.3)} }
+    @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    @keyframes rippleOut { to{transform:scale(4);opacity:0} }
+    @keyframes navIn     { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:none} }
+    @keyframes scanPing  { 0%{transform:scale(.6);opacity:1} 100%{transform:scale(2.2);opacity:0} }
+    @keyframes twinkle   { 0%,100%{opacity:.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+    @keyframes typeText  { from{width:0} to{width:100%} }
+
+    .anim-fadeInUp  { animation:fadeInUp .7s cubic-bezier(.22,.68,0,1.2) both; }
+    .anim-scaleIn   { animation:scaleIn .55s cubic-bezier(.34,1.56,.64,1) both; }
+    .delay-1{animation-delay:.1s} .delay-2{animation-delay:.2s} .delay-3{animation-delay:.3s}
+    .delay-4{animation-delay:.4s} .delay-5{animation-delay:.5s} .delay-6{animation-delay:.6s}
+
+    .lt-card {
+      background:var(--card-bg); border:1px solid var(--card-border);
+      border-radius:20px; box-shadow:var(--shadow);
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      padding:2rem; position:relative; overflow:hidden;
+      transition:border-color .3s, box-shadow .3s, transform .3s;
+    }
+    .lt-card::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(135deg, rgba(0,255,102,.04) 0%, transparent 60%);
+      pointer-events:none; border-radius:inherit;
+    }
+    body.light-mode .lt-card::before { background:linear-gradient(135deg, rgba(0,85,204,.03) 0%, transparent 60%); }
+
+    /* Feature cards float */
+    .feature-float { animation:floatCard 4s ease-in-out infinite; }
+    .feature-float:nth-child(2) { animation-delay:.8s; }
+    .feature-float:nth-child(3) { animation-delay:1.6s; }
+
+    .lt-btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+      background:linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color:#050e1a; font-family:inherit; font-weight:700; font-size:1rem;
+      padding:.85rem 2rem; border:none; border-radius:999px; cursor:pointer;
+      transition:transform .2s, box-shadow .2s, filter .2s;
+      box-shadow:0 0 20px rgba(0,255,102,.35); text-decoration:none;
+      position:relative; overflow:hidden; letter-spacing:.02em;
+    }
+    .lt-btn:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 0 40px rgba(0,255,102,.6); filter:brightness(1.05); text-decoration:none; }
+    .lt-btn:active { transform:scale(.97); }
+    .lt-btn-ghost {
+      display:inline-flex; align-items:center; gap:.5rem;
+      background:var(--card-bg); color:var(--accent);
+      border:1.5px solid var(--card-border); border-radius:999px;
+      padding:.8rem 1.8rem; font-weight:700; font-size:1rem;
+      text-decoration:none; cursor:pointer; font-family:inherit;
+      transition:border-color .3s, background .3s, transform .2s;
+    }
+    .lt-btn-ghost:hover { border-color:var(--accent); background:var(--accent-dim); transform:translateY(-2px); text-decoration:none; }
+    body.light-mode .lt-btn { color:#fff; box-shadow:0 0 20px rgba(0,85,204,.3); }
+    body.light-mode .lt-btn:hover { box-shadow:0 0 40px rgba(0,85,204,.5); }
+
+    /* Ripple */
+    .lt-ripple { position:absolute; border-radius:50%; background:rgba(255,255,255,.4); transform:scale(0); animation:rippleOut .6s ease-out forwards; pointer-events:none; }
+
+    /* Nav */
+    nav a { text-decoration:none; }
+    nav a:hover { color:var(--accent); }
+
+    /* Section heading */
+    .section-label {
+      font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em;
+      color:var(--accent); margin-bottom:.5rem; display:block;
+    }
+
+    /* Feature card */
+    .feat-card {
+      background:var(--card-bg); border:1px solid var(--card-border);
+      border-radius:20px; padding:1.75rem 1.5rem;
+      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      transition:border-color .3s, box-shadow .3s, transform .3s;
+      cursor:default;
+      text-decoration:none; display:block; color:inherit;
+    }
+    .feat-card:hover {
+      border-color:var(--card-border-h); box-shadow:var(--shadow), var(--shadow-glow);
+      transform:translateY(-6px);
+    }
+    .feat-icon {
+      width:60px; height:60px; border-radius:16px;
+      background:var(--accent-dim); border:1px solid var(--card-border);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.6rem; margin-bottom:1rem;
+      transition:transform .3s;
+    }
+    .feat-card:hover .feat-icon { transform:scale(1.1) rotate(-4deg); }
+
+    /* Stars / particles */
+    .star { position:absolute; border-radius:50%; background:rgba(0,255,102,.7); animation:twinkle ease-in-out infinite; }
+    body.light-mode .star { background:rgba(0,85,204,.5); }
+
+    /* Stat */
+    .stat-item { text-align:center; }
+    .stat-num { font-size:2.8rem; font-weight:800; color:var(--accent); line-height:1; animation:glowText 3s ease-in-out infinite; }
+    .stat-label { font-size:.82rem; color:var(--text-secondary); margin-top:.3rem; }
+
+    /* CTA gradient section */
+    .cta-section {
+      background:linear-gradient(135deg, rgba(0,255,102,.08) 0%, rgba(0,85,204,.05) 100%);
+      border-top:1px solid var(--card-border);
+      border-bottom:1px solid var(--card-border);
+    }
+
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:rgba(0,255,102,.3); border-radius:999px; }
+    body.light-mode ::-webkit-scrollbar-thumb { background:rgba(0,85,204,.25); }
+  </style>
+
+  <script>
+    (function(){
+      if (localStorage.getItem('lt-theme') === 'light')
+        document.documentElement.style.background = '#f0f4ff';
+    })();
+  </script>
+</head>
+<body>
+
+<!-- ── NAVBAR ───────────────────────────────────────────────── -->
+<header style="position:sticky; top:0; z-index:50; height:var(--nav-h); display:flex; align-items:center;
+  background:rgba(8,14,31,.88); border-bottom:1px solid var(--card-border);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  animation:navIn .5s ease both; transition:background .3s, border-color .3s;" id="idx-header">
+  <div style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:0 2rem;">
+    <div style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+      <div style="width:36px; height:36px; background:linear-gradient(135deg, var(--accent), var(--accent-hover)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.15rem; box-shadow:0 0 16px rgba(0,255,102,.4); flex-shrink:0; transition:transform .2s;" class="logo-icon"><i class="ph ph-shield-check"></i></div>
+      <div>
+        <span style="font-size:1.15rem; font-weight:800; color:var(--accent); letter-spacing:-.5px; display:block; line-height:1.1;">LokTruth</span>
+        <span style="font-size:.6rem; color:var(--text-muted); font-weight:600; letter-spacing:.12em; text-transform:uppercase;">AI Detection</span>
+      </div>
+    </div>
+    <nav style="display:flex; gap:4px; align-items:center;" class="hidden md:flex">
+      <a href="{% url 'ml_app:audio_upload' %}" style="padding:.45rem .9rem; border-radius:10px; font-weight:600; font-size:.88rem; color:var(--text-secondary); transition:color .2s, background .2s;"
+         onmouseover="this.style.color='var(--accent)';this.style.background='var(--accent-dim)'" onmouseout="this.style.color='var(--text-secondary)';this.style.background=''"> <i class="ph ph-waveform"></i> Audio</a>
+      <a href="{% url 'ml_app:upload_image' %}" style="padding:.45rem .9rem; border-radius:10px; font-weight:600; font-size:.88rem; color:var(--text-secondary); transition:color .2s, background .2s;"
+         onmouseover="this.style.color='var(--accent)';this.style.background='var(--accent-dim)'" onmouseout="this.style.color='var(--text-secondary)';this.style.background=''"> <i class="ph ph-image"></i> Image</a>
+      <a href="{% url 'ml_app:video_upload' %}" style="padding:.45rem .9rem; border-radius:10px; font-weight:600; font-size:.88rem; color:var(--text-secondary); transition:color .2s, background .2s;"
+         onmouseover="this.style.color='var(--accent)';this.style.background='var(--accent-dim)'" onmouseout="this.style.color='var(--text-secondary)';this.style.background=''"> <i class="ph ph-video-camera"></i> Video</a>
+    </nav>
+    <button id="theme-btn" onclick="toggleTheme()" style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:999px; padding:.4rem .9rem; cursor:pointer; color:var(--accent); font-size:.95rem; display:flex; align-items:center; gap:.35rem; transition:border-color .2s;" aria-label="Toggle theme">
+      <span id="theme-icon"><i class="ph ph-moon"></i></span>
+    </button>
+  </div>
+</header>
+
+<!-- ── HERO ─────────────────────────────────────────────────── -->
+<section style="position:relative; min-height:90dvh; display:flex; align-items:center; justify-content:center; overflow:hidden; z-index:1;">
+  <!-- Floating stars -->
+  <div class="star" style="width:3px;height:3px;left:10%;top:20%;animation-delay:0s;animation-duration:2.1s;"></div>
+  <div class="star" style="width:2px;height:2px;left:20%;top:50%;animation-delay:.5s;animation-duration:3.2s;"></div>
+  <div class="star" style="width:3px;height:3px;left:80%;top:15%;animation-delay:1s;animation-duration:2.7s;"></div>
+  <div class="star" style="width:2px;height:2px;left:70%;top:65%;animation-delay:1.5s;animation-duration:2.4s;"></div>
+  <div class="star" style="width:4px;height:4px;left:45%;top:80%;animation-delay:.8s;animation-duration:3.5s;"></div>
+  <div class="star" style="width:2px;height:2px;left:90%;top:40%;animation-delay:.3s;animation-duration:2.9s;"></div>
+
+  <!-- Glow orb behind -->
+  <div style="position:absolute; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle, rgba(0,255,102,.07) 0%, transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; animation:floatCard 6s ease-in-out infinite;"></div>
+
+  <!-- Ping rings -->
+  <div style="position:absolute; width:400px; height:400px; border-radius:50%; border:1px solid rgba(0,255,102,.08); top:50%; left:50%; transform:translate(-50%,-50%); animation:scanPing 4s ease-out infinite;"></div>
+  <div style="position:absolute; width:400px; height:400px; border-radius:50%; border:1px solid rgba(0,255,102,.06); top:50%; left:50%; transform:translate(-50%,-50%); animation:scanPing 4s ease-out 1.3s infinite;"></div>
+  <div style="position:absolute; width:400px; height:400px; border-radius:50%; border:1px solid rgba(0,255,102,.04); top:50%; left:50%; transform:translate(-50%,-50%); animation:scanPing 4s ease-out 2.6s infinite;"></div>
+
+  <div style="text-align:center; max-width:820px; padding:2rem; position:relative; z-index:2;">
+    <!-- Badge -->
+    <div class="anim-fadeInUp" style="display:inline-flex; align-items:center; gap:.5rem; padding:.4rem 1.1rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; margin-bottom:1.25rem; font-size:.82rem; font-weight:700; color:var(--accent); letter-spacing:.04em;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:twinkle 1.5s ease-in-out infinite;"></span>
+      Powered by Deep Learning
+    </div>
+
+    <!-- Headline -->
+    <h1 class="anim-fadeInUp delay-1" style="font-size:clamp(2.4rem,6vw,4.2rem); font-weight:800; margin:0 0 1rem; line-height:1.1; letter-spacing:-.03em;">
+      <span style="color:var(--text-primary);">Detect </span>
+      <span style="color:var(--accent); text-shadow:0 0 40px rgba(0,255,102,.4); animation:glowText 3s ease-in-out infinite;">Deepfakes</span>
+      <span style="color:var(--text-primary);"><br>with AI Precision</span>
+    </h1>
+
+    <!-- Tagline -->
+    <p class="anim-fadeInUp delay-2" style="font-size:1.15rem; color:var(--text-secondary); max-width:540px; margin:0 auto 2.5rem; line-height:1.7;">
+      LokTruth AI uses state-of-the-art deep learning to analyze audio, images, and video for AI-generated manipulation — in seconds.
+    </p>
+
+    <!-- CTA buttons -->
+    <div class="anim-fadeInUp delay-3" style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-bottom:3rem;">
+      <a href="{% url 'ml_app:video_upload' %}" class="lt-btn" style="min-width:180px; font-size:1.05rem; padding:.95rem 2rem;">
+        <i class="ph ph-video-camera"></i> Analyze Video
+      </a>
+      <a href="{% url 'ml_app:audio_upload' %}" class="lt-btn-ghost" style="min-width:160px; font-size:1.05rem; padding:.9rem 1.8rem;">
+        <i class="ph ph-waveform"></i> Analyze Audio
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="anim-fadeInUp delay-4" style="display:flex; justify-content:center; gap:3rem; flex-wrap:wrap;">
+      <div class="stat-item"><div class="stat-num" style="animation-delay:0s;">95%</div><div class="stat-label">Detection Accuracy</div></div>
+      <div class="stat-item"><div class="stat-num" style="animation-delay:.5s;">3</div><div class="stat-label">Media Types</div></div>
+      <div class="stat-item"><div class="stat-num" style="animation-delay:1s;">&lt;60s</div><div class="stat-label">Analysis Time</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ──────────────────────────────────────────────── -->
+<section style="padding:5rem 2rem; position:relative; z-index:1;">
+  <div style="max-width:1100px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:3rem;">
+      <span class="section-label">Detection Modes</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.4rem); font-weight:800; margin:0; color:var(--text-primary);">Three Ways to Detect Deepfakes</h2>
+      <p style="color:var(--text-secondary); margin:.75rem auto 0; max-width:480px; font-size:1rem; line-height:1.7;">Choose the type of media you want to analyze and get instant AI-powered results.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
+
+      <a href="{% url 'ml_app:video_upload' %}" class="feat-card feature-float anim-scaleIn delay-1">
+        <div class="feat-icon"><i class="ph ph-video-camera"></i></div>
+        <h3 style="color:var(--text-primary); font-size:1.2rem; font-weight:700; margin:0 0 .5rem;">Video Detection</h3>
+        <p style="color:var(--text-secondary); font-size:.9rem; line-height:1.6; margin:0 0 1.25rem;">Frame-by-frame deepfake analysis with face detection, identity variance scoring, and FOMM model inference.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:.4rem;">
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">Face Detection</span>
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">Frame Analysis</span>
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">Identity Score</span>
+        </div>
+        <div style="margin-top:1.25rem; color:var(--accent); font-weight:700; font-size:.88rem;">Analyze Video →</div>
+      </a>
+
+      <a href="{% url 'ml_app:audio_upload' %}" class="feat-card feature-float anim-scaleIn delay-3">
+        <div class="feat-icon"><i class="ph ph-waveform"></i></div>
+        <h3 style="color:var(--text-primary); font-size:1.2rem; font-weight:700; margin:0 0 .5rem;">Audio Detection</h3>
+        <p style="color:var(--text-secondary); font-size:.9rem; line-height:1.6; margin:0 0 1.25rem;">Detect cloned and synthetic voices using mel-spectrogram analysis and LSTM neural network inference.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:.4rem;">
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">Voice Cloning</span>
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">LSTM Model</span>
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">Spectrogram</span>
+        </div>
+        <div style="margin-top:1.25rem; color:var(--accent); font-weight:700; font-size:.88rem;">Analyze Audio →</div>
+      </a>
+
+      <a href="{% url 'ml_app:upload_image' %}" class="feat-card feature-float anim-scaleIn delay-5">
+        <div class="feat-icon"><i class="ph ph-image"></i></div>
+        <h3 style="color:var(--text-primary); font-size:1.2rem; font-weight:700; margin:0 0 .5rem;">Image Detection</h3>
+        <p style="color:var(--text-secondary); font-size:.9rem; line-height:1.6; margin:0 0 1.25rem;">Identify GAN-generated faces, face swaps, and image inpainting using CNN pixel-level artifact analysis.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:.4rem;">
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">GAN Detection</span>
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">Face Swap</span>
+          <span style="padding:.25rem .7rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.72rem; color:var(--accent); font-weight:700;">CNN Model</span>
+        </div>
+        <div style="margin-top:1.25rem; color:var(--accent); font-weight:700; font-size:.88rem;">Analyze Image →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ─────────────────────────────────────────── -->
+<section style="padding:5rem 2rem; background:var(--bg2); border-top:1px solid var(--card-border); border-bottom:1px solid var(--card-border); position:relative; z-index:1;">
+  <div style="max-width:1000px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:3rem;">
+      <span class="section-label">Process</span>
+      <h2 style="font-size:clamp(1.6rem,4vw,2.2rem); font-weight:800; margin:0; color:var(--text-primary);">How LokTruth Works</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:2rem;">
+      {% for step in "1234" %}
+      <div style="text-align:center; animation:fadeInUp .6s ease {{forloop.counter}}00ms both;">
+        <div style="width:64px; height:64px; border-radius:20px; background:var(--accent-dim); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.6rem; transition:transform .2s, border-color .3s;" onmouseover="this.style.transform='scale(1.1)';this.style.borderColor='var(--accent)'" onmouseout="this.style.transform='';this.style.borderColor='var(--card-border)'">
+          {% if forloop.counter == 1 %}<i class="ph ph-upload-simple"></i>{% elif forloop.counter == 2 %}<i class="ph ph-microscope"></i>{% elif forloop.counter == 3 %}<i class="ph ph-brain"></i>{% else %}<i class="ph ph-chart-bar"></i>{% endif %}
+        </div>
+        <div style="width:32px; height:32px; border-radius:50%; background:var(--accent); color:#050e1a; font-weight:800; font-size:.85rem; display:flex; align-items:center; justify-content:center; margin:0 auto .75rem;">{{ forloop.counter }}</div>
+        <h3 style="color:var(--text-primary); font-size:1rem; font-weight:700; margin:0 0 .5rem;">
+          {% if forloop.counter == 1 %}Upload File{% elif forloop.counter == 2 %}Preprocessing{% elif forloop.counter == 3 %}AI Inference{% else %}Get Results{% endif %}
+        </h3>
+        <p style="color:var(--text-secondary); font-size:.85rem; margin:0; line-height:1.6;">
+          {% if forloop.counter == 1 %}Upload your audio, image, or video file using our secure interface{% elif forloop.counter == 2 %}Our pipeline extracts features, detects faces, and prepares the data{% elif forloop.counter == 3 %}Deep learning models analyze for deepfake artifacts and patterns{% else %}Get a detailed report with confidence scores and verdict{% endif %}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ──────────────────────────────────────────────────── -->
+<section class="cta-section" style="padding:5rem 2rem; text-align:center; position:relative; z-index:1;">
+  <div style="max-width:600px; margin:0 auto;">
+    <div style="font-size:3rem; margin-bottom:1rem; animation:bounce 2s ease-in-out infinite;"><i class="ph ph-rocket"></i></div>
+    <h2 style="font-size:clamp(1.6rem,4vw,2.2rem); font-weight:800; margin:0 0 1rem; color:var(--text-primary);">Ready to Detect a Deepfake?</h2>
+    <p style="color:var(--text-secondary); font-size:1rem; margin:0 0 2rem; line-height:1.7;">Upload your first file and get instant AI-powered analysis. No account required.</p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <a href="{% url 'ml_app:video_upload' %}" class="lt-btn" style="min-width:180px;"><i class="ph ph-video-camera"></i> Analyze Video</a>
+      <a href="{% url 'ml_app:audio_upload' %}" class="lt-btn-ghost" style="min-width:160px;"><i class="ph ph-waveform"></i> Analyze Audio</a>
+      <a href="{% url 'ml_app:upload_image' %}" class="lt-btn-ghost" style="min-width:160px;"><i class="ph ph-image"></i> Analyze Image</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ───────────────────────────────────────────────── -->
+{% include 'footer.html' %}
+
+<script>
+  // Theme
+  (function(){
+    var light = localStorage.getItem('lt-theme') === 'light';
+    if (light) document.body.classList.add('light-mode');
+    document.getElementById('theme-icon').innerHTML = light ? '<i class="ph ph-sun"></i>' : '<i class="ph ph-moon"></i>';
+  })();
+  function toggleTheme(){
+    document.body.classList.toggle('light-mode');
+    var light = document.body.classList.contains('light-mode');
+    localStorage.setItem('lt-theme', light ? 'light' : 'dark');
+    document.getElementById('theme-icon').innerHTML = light ? '<i class="ph ph-sun"></i>' : '<i class="ph ph-moon"></i>';
+  }
+  // Nav scroll
+  window.addEventListener('scroll', function(){
+    var h = document.getElementById('idx-header');
+    if (h) h.style.background = window.scrollY > 20 ? 'rgba(5,10,20,.96)' : 'rgba(8,14,31,.88)';
+  }, { passive:true });
+  // Logo hover
+  document.querySelector('.logo-icon').addEventListener('mouseover', function(){
+    this.style.transform = 'rotate(-8deg) scale(1.1)';
+    this.style.boxShadow = '0 0 24px rgba(0,255,102,.6)';
+  });
+  document.querySelector('.logo-icon').addEventListener('mouseout', function(){
+    this.style.transform = '';
+    this.style.boxShadow = '';
+  });
+  // Button ripple
+  document.querySelectorAll('.lt-btn, .lt-btn-ghost').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      var r = document.createElement('span');
+      r.className = 'lt-ripple';
+      var rect = btn.getBoundingClientRect();
+      var size = Math.max(rect.width, rect.height);
+      r.style.cssText = 'width:'+size+'px;height:'+size+'px;left:'+(e.clientX-rect.left-size/2)+'px;top:'+(e.clientY-rect.top-size/2)+'px';
+      btn.appendChild(r);
+      setTimeout(function(){ r.remove(); }, 600);
+    });
+  });
+</script>
+
+<!-- ── PARTICLE CURSOR ───────────────────────────────────── -->
+<canvas id="idx-particle-canvas" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99998;"></canvas>
+<div id="idx-cursor-dot" aria-hidden="true" style="position:fixed;width:10px;height:10px;border-radius:50%;background:var(--accent);pointer-events:none;z-index:99999;transform:translate(-50%,-50%);box-shadow:0 0 12px var(--accent),0 0 24px rgba(0,255,102,.4);will-change:left,top;transition:width .15s,height .15s;"></div>
+<div id="idx-cursor-ring" aria-hidden="true" style="position:fixed;width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(0,255,102,.55);pointer-events:none;z-index:99997;transform:translate(-50%,-50%);will-change:left,top;transition:width .2s cubic-bezier(.34,1.56,.64,1),height .2s cubic-bezier(.34,1.56,.64,1),border-color .3s,background .3s;"></div>
+
+<style>
+  @media (pointer: fine) {
+    body, body * { cursor: none !important; }
+  }
+  body.idx-cursor-click #idx-cursor-dot { width:18px !important;height:18px !important;box-shadow:0 0 20px var(--accent),0 0 50px rgba(0,255,102,.6); }
+  body.idx-cursor-hover #idx-cursor-ring { width:60px !important;height:60px !important;border-color:var(--accent) !important;background:rgba(0,255,102,.05) !important; }
+  body.light-mode #idx-cursor-ring { border-color:rgba(0,85,204,.4); }
+  body.light-mode #idx-cursor-dot { box-shadow:0 0 12px var(--accent),0 0 24px rgba(0,85,204,.3); }
+</style>
+
+<script>
+(function(){
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+  var dot    = document.getElementById('idx-cursor-dot');
+  var ring   = document.getElementById('idx-cursor-ring');
+  var canvas = document.getElementById('idx-particle-canvas');
+  var ctx    = canvas.getContext('2d');
+  var mouse  = { x:-200, y:-200 };
+  var ringPos= { x:-200, y:-200 };
+  var particles = [];
+  var hue = 141;
+
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize, { passive:true });
+
+  function Particle(x, y, isClick){
+    this.x = x; this.y = y;
+    var angle = Math.random() * Math.PI * 2;
+    var speed = isClick ? Math.random()*6+3 : Math.random()*1.5+0.3;
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed - (isClick ? 0 : 0.5);
+    this.life  = 1;
+    this.decay = isClick ? Math.random()*.03+.025 : Math.random()*.02+.012;
+    this.size  = isClick ? Math.random()*5+2 : Math.random()*3+1;
+    this.isClick = isClick;
+    this.hue = hue + (Math.random()*40-20);
+    this.sat = isClick ? 100 : 90;
+  }
+  Particle.prototype.update = function(){
+    this.x += this.vx; this.y += this.vy;
+    this.vy += 0.08; this.vx *= 0.97;
+    this.life -= this.decay; this.size *= 0.97;
+  };
+  Particle.prototype.draw = function(){
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, this.life);
+    ctx.fillStyle   = 'hsl('+this.hue+','+this.sat+'%,60%)';
+    ctx.shadowBlur  = this.isClick ? 20 : 10;
+    ctx.shadowColor = 'hsl('+this.hue+',100%,70%)';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, Math.max(0.1, this.size), 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  };
+  Particle.prototype.dead = function(){ return this.life <= 0; };
+
+  var lastTrail = 0;
+  document.addEventListener('mousemove', function(e){
+    mouse.x = e.clientX; mouse.y = e.clientY;
+    dot.style.left = mouse.x+'px'; dot.style.top = mouse.y+'px';
+    var now = Date.now();
+    if (now - lastTrail > 28){
+      lastTrail = now;
+      for (var i=0;i<2;i++){
+        particles.push(new Particle(mouse.x+(Math.random()-.5)*4, mouse.y+(Math.random()-.5)*4, false));
+      }
+    }
+  }, { passive:true });
+
+  document.addEventListener('click', function(e){
+    document.body.classList.add('idx-cursor-click');
+    setTimeout(function(){ document.body.classList.remove('idx-cursor-click'); }, 150);
+    for (var i=0;i<18;i++) particles.push(new Particle(e.clientX, e.clientY, true));
+  });
+
+  var hoverSel = 'a,button,[role=button],.feat-card,.lt-card';
+  document.addEventListener('mouseover', function(e){ if(e.target.closest(hoverSel)) document.body.classList.add('idx-cursor-hover'); });
+  document.addEventListener('mouseout',  function(e){ if(e.target.closest(hoverSel)) document.body.classList.remove('idx-cursor-hover'); });
+
+  function updateHue(){
+    hue = document.body.classList.contains('light-mode') ? 220 : 141;
+    ring.style.borderColor = document.body.classList.contains('light-mode') ? 'rgba(0,85,204,.45)' : 'rgba(0,255,102,.55)';
+    dot.style.boxShadow    = document.body.classList.contains('light-mode') ? '0 0 12px #0055cc,0 0 24px rgba(0,85,204,.35)' : '0 0 12px #00FF66,0 0 24px rgba(0,255,102,.4)';
+  }
+  updateHue();
+  new MutationObserver(function(m){ m.forEach(function(e){ if(e.attributeName==='class') updateHue(); }); }).observe(document.body,{attributes:true});
+
+  function loop(){
+    var ls = document.body.classList.contains('idx-cursor-hover') ? 0.1 : 0.13;
+    ringPos.x += (mouse.x - ringPos.x) * ls;
+    ringPos.y += (mouse.y - ringPos.y) * ls;
+    ring.style.left = ringPos.x+'px'; ring.style.top = ringPos.y+'px';
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles = particles.filter(function(p){ p.update(); if(!p.dead()){ p.draw(); return true; } return false; });
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  document.addEventListener('mouseleave', function(){ dot.style.opacity='0'; ring.style.opacity='0'; });
+  document.addEventListener('mouseenter', function(){ dot.style.opacity='1'; ring.style.opacity='1'; });
+})();
+</script>
+</body>
 </html>
-{% endblock %}
+

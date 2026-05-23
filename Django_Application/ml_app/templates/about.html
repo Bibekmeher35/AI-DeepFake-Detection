@@ -1,4 +1,37 @@
 {% extends 'base.html' %}
 {% load static %}
-{%block content%}
-{%endblock%}
+{% block title %}About — LokTruth AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-12 px-4">
+  <div class="lt-card w-full" style="max-width:640px; text-align:center;">
+    <div style="font-size:3rem; margin-bottom:0.75rem; color:var(--accent);"><i class="ph ph-shield-check"></i></div>
+    <h1 class="text-2xl font-bold glow mb-2" style="color:var(--accent);">About LokTruth AI</h1>
+    <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.7; margin-bottom:1.5rem;">
+      LokTruth AI is a deepfake detection platform powered by cutting-edge deep learning models.
+      We help individuals and organizations verify the authenticity of audio, images, and video content
+      to fight misinformation and protect digital integrity.
+    </p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+      <div class="rounded-xl p-4" style="background:var(--card-bg); border:1px solid var(--card-border);">
+        <div style="font-size:1.8rem; margin-bottom:0.4rem; color:var(--accent);"><i class="ph ph-waveform"></i></div>
+        <p style="color:var(--accent); font-weight:700; margin:0; font-size:0.9rem;">Audio</p>
+        <p style="color:var(--text-secondary); font-size:0.8rem; margin:0.2rem 0 0;">Voice deepfake detection</p>
+      </div>
+      <div class="rounded-xl p-4" style="background:var(--card-bg); border:1px solid var(--card-border);">
+        <div style="font-size:1.8rem; margin-bottom:0.4rem; color:var(--accent);"><i class="ph ph-image"></i></div>
+        <p style="color:var(--accent); font-weight:700; margin:0; font-size:0.9rem;">Image</p>
+        <p style="color:var(--text-secondary); font-size:0.8rem; margin:0.2rem 0 0;">Face swap detection</p>
+      </div>
+      <div class="rounded-xl p-4" style="background:var(--card-bg); border:1px solid var(--card-border);">
+        <div style="font-size:1.8rem; margin-bottom:0.4rem; color:var(--accent);"><i class="ph ph-video-camera"></i></div>
+        <p style="color:var(--accent); font-weight:700; margin:0; font-size:0.9rem;">Video</p>
+        <p style="color:var(--text-secondary); font-size:0.8rem; margin:0.2rem 0 0;">Frame-level analysis</p>
+      </div>
+    </div>
+
+    <a href="{% url 'ml_app:index' %}" class="lt-back">← Back to Home</a>
+  </div>
+</div>
+{% endblock %}

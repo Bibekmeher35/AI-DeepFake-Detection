@@ -1,10 +1,120 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Image Result — LokTruth AI{% endblock %}
+
 {% block content %}
-<h2>Image Prediction Result</h2>
-{% if image_file_url %}
-<img src="{{ image_file_url }}" alt="Uploaded Image" style="max-width:400px;">
-{% endif %}
-<p>{{ image_result }}</p>
-<a href="{% url 'ml_app:image_upload' %}" class="btn btn-secondary">Upload Another Image</a>
+<div style="min-height:calc(100dvh - var(--nav-h)); padding:2rem; display:flex; flex-direction:column; gap:1.5rem;">
+
+  <!-- Page title -->
+  <div class="anim-fadeInDown" style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+    <div style="font-size:2rem; animation: bounce 2s ease-in-out infinite; color:var(--accent);"><i class="ph ph-image"></i></div>
+    <div>
+      <h1 style="color:var(--accent); font-size:1.4rem; font-weight:800; margin:0;">Image Prediction Result</h1>
+      <p style="color:var(--text-secondary); font-size:.85rem; margin:0;">Your image has been analyzed by our deepfake detection model</p>
+    </div>
+    <a href="{% url 'ml_app:upload_image' %}" class="lt-back" style="margin-left:auto;">← Upload Another</a>
+  </div>
+
+  <!-- Main content grid -->
+  <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:1.5rem; flex:1; align-items:start;">
+
+    <!-- Image display -->
+    <div class="lt-card anim-slideR" style="padding:1.25rem;">
+      {% if image_file_url %}
+      <p style="color:var(--text-secondary); font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:0 0 .75rem;">Analyzed Image</p>
+      <div style="position:relative; border-radius:14px; overflow:hidden; background:#000;">
+        <img src="{{ image_file_url }}" alt="Uploaded Image"
+             style="width:100%; max-height:480px; object-fit:contain; display:block; border-radius:14px; animation: scaleIn .5s ease both;">
+        <!-- Scan overlay if result -->
+        {% if image_result %}
+        <div style="position:absolute; inset:0; border-radius:14px; border:2px solid
+          {% if 'real' in image_result|lower %}var(--real-color){% elif 'fake' in image_result|lower %}var(--fake-color){% else %}var(--warn-color){% endif %};
+          animation: fadeIn .8s ease .5s both; pointer-events:none;"></div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div style="height:200px; display:flex; align-items:center; justify-content:center; border-radius:14px; border:2px dashed var(--card-border);">
+        <p style="color:var(--text-muted); font-size:.9rem;">No image available</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Result panel -->
+    <div style="display:flex; flex-direction:column; gap:1rem; position:sticky; top:calc(var(--nav-h) + 1rem);">
+
+      {% if image_result %}
+      <!-- Verdict -->
+      <div class="lt-card anim-slideL" style="padding:1.5rem; text-align:center;
+        border-color:
+          {% if 'real' in image_result|lower %}rgba(0,255,102,.5){% elif 'fake' in image_result|lower %}rgba(255,77,109,.5){% else %}rgba(251,191,36,.5){% endif %};">
+
+        <!-- Background glow -->
+        <div style="position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+          background: radial-gradient(ellipse at 50% 0%,
+            {% if 'real' in image_result|lower %}rgba(0,255,102,0.10){% elif 'fake' in image_result|lower %}rgba(255,77,109,0.10){% else %}rgba(251,191,36,0.08){% endif %}
+          0%, transparent 70%);"></div>
+
+        <div style="font-size:3.5rem; margin-bottom:.75rem; animation: scaleIn .6s cubic-bezier(.34,1.56,.64,1) .2s both; position:relative;">
+          {% if 'real' in image_result|lower %}<i class="ph ph-check-circle"></i>{% elif 'fake' in image_result|lower %}<i class="ph ph-warning-circle"></i>{% else %}<i class="ph ph-warning"></i>{% endif %}
+        </div>
+
+        <div style="animation: verdictIn .7s cubic-bezier(.34,1.56,.64,1) .35s both; margin-bottom:1rem; position:relative;">
+          {% if 'real' in image_result|lower %}
+            <span class="lt-badge-real" style="font-size:1.1rem; padding:.5rem 1.5rem;"><i class="ph ph-check-circle"></i> REAL IMAGE</span>
+          {% elif 'fake' in image_result|lower %}
+            <span class="lt-badge-fake" style="font-size:1.1rem; padding:.5rem 1.5rem;"><i class="ph ph-warning-circle"></i> DEEPFAKE</span>
+          {% else %}
+            <span class="lt-badge-unknown" style="font-size:1.05rem; padding:.4rem 1.2rem;"><i class="ph ph-warning"></i> UNCERTAIN</span>
+          {% endif %}
+        </div>
+
+        <div style="padding:1rem; background:var(--bg2); border-radius:12px; margin-bottom:1rem; text-align:left; position:relative;">
+          <p style="color:var(--text-secondary); font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin:0 0 .3rem;">Model Output</p>
+          <p style="color:var(--text-primary); font-size:.9rem; margin:0; line-height:1.5;">{{ image_result }}</p>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:.5rem; position:relative;">
+          <a href="{% url 'ml_app:upload_image' %}" class="lt-btn" style="font-size:.9rem;">
+            <i class="ph ph-arrows-clockwise"></i> Upload Another Image
+          </a>
+          <a href="{% url 'ml_app:index' %}" class="lt-btn" style="background:var(--card-bg); color:var(--accent); border:1px solid var(--card-border); box-shadow:none; font-size:.9rem;">
+            ← Back to Home
+          </a>
+        </div>
+      </div>
+
+      {% else %}
+      <!-- No result -->
+      <div class="lt-card anim-slideL" style="padding:2rem; text-align:center;">
+        <div style="font-size:3rem; margin-bottom:1rem; color:var(--text-secondary);"><i class="ph ph-question"></i></div>
+        <h2 style="color:var(--text-primary); font-size:1.1rem; font-weight:700; margin:0 0 .5rem;">No Prediction Yet</h2>
+        <p style="color:var(--text-secondary); font-size:.85rem; margin:0 auto 1.5rem; line-height:1.5;">Upload an image to get your deepfake detection results.</p>
+        <a href="{% url 'ml_app:upload_image' %}" class="lt-btn"><i class="ph ph-image"></i> Upload Image</a>
+      </div>
+      {% endif %}
+
+      <!-- Tips card -->
+      <div class="lt-card anim-slideL delay-3" style="padding:1.25rem;">
+        <p style="color:var(--accent); font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:0 0 .75rem;">About This Analysis</p>
+        <p style="color:var(--text-secondary); font-size:.82rem; line-height:1.6; margin:0;">
+          Our CNN-based model analyzes pixel-level artifacts, facial geometry inconsistencies, and compression patterns to determine if an image has been AI-generated or manipulated.
+        </p>
+        <div style="margin-top:.75rem; padding:.6rem .9rem; background:var(--accent-dim); border-radius:10px; border:1px solid var(--card-border);">
+          <p style="color:var(--accent); font-size:.78rem; font-weight:600; margin:0;"><i class="ph ph-warning"></i> No tool is 100% accurate. Use results as guidance only.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  @media (max-width: 860px) {
+    div[style*="grid-template-columns: 1.2fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+    div[style*="position:sticky"] { position: static !important; }
+  }
+</style>
 {% endblock %}

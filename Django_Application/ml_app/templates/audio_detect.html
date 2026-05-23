@@ -1,143 +1,253 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Audio Detection — LokTruth AI{% endblock %}
+
 {% block content %}
 <style>
-.hero {
-    position: relative;
-    background: url("{% static 'images/hero-bg.jpg' %}") no-repeat center center/cover;
-    min-height: 100vh;
+  .au-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    min-height: calc(100dvh - var(--nav-h));
+    align-items: start;
+    padding: 2rem;
+  }
+  @media (max-width: 860px) {
+    .au-grid { grid-template-columns: 1fr; min-height:auto; padding:1rem; }
+  }
+
+  /* Waveform visualizer (CSS only) */
+  .waveform {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
-}
-.hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1;
-}
-.upload-container {
-    position: relative;
-    z-index: 2;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 3rem 2.5rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    max-width: 480px;
-    width: 100%;
-    text-align: center;
-}
-.upload-container .logo img {
-    max-width: 140px;
-    margin-bottom: 1.5rem;
-}
-.upload-container h2 {
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    color: #333;
-}
-audio {
-    margin-bottom: 1rem;
-    width: 100%;
-    display: none;
-}
-.file-drop-area {
-    border: 2px dashed #6c63ff;
-    padding: 1.5rem;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: border-color 0.3s ease;
-    margin-bottom: 0.8rem;
-}
-.file-drop-area:hover {
-    border-color: #4b42c1;
-}
-input[type="file"] {
-    display: none;
-}
-.file-label {
-    font-weight: 600;
-    color: #6c63ff;
-    cursor: pointer;
-    display: block;
-}
-.btn-primary {
-    background: linear-gradient(135deg, #6c63ff, #9b8cff);
-    border: none;
-    border-radius: 30px;
-    padding: 0.7rem 2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #fff;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
-    margin-top: 1rem;
-    width: 100%;
-}
-.btn-primary:hover {
-    background: linear-gradient(135deg, #574bdb, #7b6be8);
-}
-.result-box {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    border-radius: 10px;
-    background: #f0f0f0;
-}
-.result-box p {
-    margin: 0.4rem 0;
-    font-weight: 600;
-}
+    gap: 3px;
+    height: 48px;
+    margin: .75rem 0;
+  }
+  .waveform-bar {
+    width: 4px;
+    border-radius: 999px;
+    background: var(--accent);
+    opacity: .6;
+    animation: waveAnim 1.2s ease-in-out infinite;
+  }
+  @keyframes waveAnim {
+    0%,100% { height: 8px; opacity:.3; }
+    50%      { height: 40px; opacity:1; }
+  }
+
+  audio::-webkit-media-controls-panel { background: var(--card-bg); }
+
+  /* Result box */
+  .result-reveal { animation: verdictIn .7s cubic-bezier(.34,1.56,.64,1) both; }
 </style>
 
-<div class="hero">
-    <div class="upload-container">
-        <div class="logo"><img src="{% static 'images/logo1.png' %}" alt="Logo"></div>
-        <h2>Upload an Audio File</h2>
-        
-        <!-- Audio preview -->
-        <audio controls id="audio-preview">
-            <source src="" id="audio-source">
-            Your browser does not support the audio element.
-        </audio>
-
-        <!-- Audio upload form -->
-        <form method="POST" enctype="multipart/form-data" action="{% url 'ml_app:audio_upload' %}">
-    {% csrf_token %}
-    <div class="file-drop-area">
-        <label for="audio_file" class="file-label">📂 Choose an audio file (.wav or .mp3)</label>
-        <input type="file" id="audio_file" name="audio_file" accept=".wav,.mp3" required onchange="previewAudio(event)">
-    </div>
-    <button type="submit" class="btn btn-primary">Detect Audio Deepfake</button>
-</form>
-
-<audio controls id="audio-preview" style="display:none;">
-    <source src="" id="audio-source">
-</audio>
-
-{% if result %}
-<div class="result-box">
-    <h3>Detection Result:</h3>
-    <p>Label: {{ result.label }}</p>
-    <p>Confidence: {{ result.confidence }}%</p>
-    <audio controls>
-        <source src="{{ audio_file_url }}">
-    </audio>
+<!-- Page header -->
+<div class="page-hero anim-fadeInDown">
+  <div style="font-size:2.5rem; animation: bounce 2s ease-in-out infinite; color:var(--accent);"><i class="ph ph-waveform"></i></div>
+  <div>
+    <h1 style="color:var(--accent); font-size:1.5rem; font-weight:800; margin:0; text-shadow:0 0 14px rgba(0,255,102,.3);">Audio Deepfake Detection</h1>
+    <p style="color:var(--text-secondary); font-size:.88rem; margin:0;">Upload a .wav or .mp3 file to analyze if the voice is AI-generated</p>
+  </div>
+  <a href="{% url 'ml_app:index' %}" class="lt-back" style="margin-left:auto; flex-shrink:0;">← Home</a>
 </div>
-{% endif %}
+
+<div class="au-grid">
+
+  <!-- ── LEFT PANEL ─────────────────────────────────────────── -->
+  <div style="display:flex; flex-direction:column; gap:1rem;">
+
+    <!-- Upload card -->
+    <form method="POST" enctype="multipart/form-data" action="{% url 'ml_app:audio_upload' %}" id="audio-form" data-lt-detect="audio" style="display:contents;">
+      {% csrf_token %}
+      <div class="lt-card anim-slideR" style="padding:1.5rem;">
+      <h2 style="color:var(--text-primary); font-size:1rem; font-weight:700; margin:0 0 1rem; display:flex; align-items:center; gap:.5rem;">
+        <span style="color:var(--accent);"><i class="ph ph-folder-open"></i></span> Choose Audio File
+      </h2>
+
+      <div class="lt-drop" id="au-drop" role="button" tabindex="0"
+           onclick="document.getElementById('audio_file').click()"
+           onkeydown="if(event.key==='Enter') this.click()">
+        <span class="drop-icon"><i class="ph ph-microphone-stage"></i></span>
+        <p style="color:var(--accent); font-weight:700; margin:0; font-size:1.05rem;">Drop your audio here</p>
+        <p style="color:var(--text-secondary); font-size:.82rem; margin:.4rem 0 0;">or click to browse — WAV or MP3</p>
+        <div id="au-filename-wrap" style="display:none; margin-top:.75rem; padding:.5rem 1rem; background:var(--accent-dim); border-radius:999px; border:1px solid var(--card-border);">
+          <p id="au-filename" style="color:var(--accent); font-size:.82rem; font-weight:600; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></p>
+        </div>
+        <input type="file" id="audio_file" name="audio_file" accept=".wav,.mp3" required
+               style="display:none;" onchange="previewAudio(event)">
+      </div>
+
+      <!-- Waveform animation (shows when file chosen) -->
+      <div id="au-waveform" style="display:none; animation: fadeIn .5s ease both;">
+        <div class="waveform">
+          {% for i in "12345678910111213141516" %}
+          <div class="waveform-bar" style="animation-delay: {{ forloop.counter0 }}00ms; height:{{ forloop.counter0|add:4 }}px;"></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Audio preview -->
+      <div id="au-preview-wrap" style="display:none; margin-top:.75rem; animation: scaleIn .4s ease both;">
+        <audio id="au-preview" controls style="width:100%; border-radius:12px;">
+          <source id="au-src" src="">
+          Your browser does not support the audio element.
+        </audio>
+        <p id="au-info" style="color:var(--text-muted); font-size:.75rem; margin:.4rem 0 0; text-align:center;"></p>
+      </div>
+
+        <div style="margin-top:1rem;">
+          <button type="submit" class="lt-btn" id="au-submit" onclick="validateAudioForm(event)">
+          <span id="au-btn-text"><i class="ph ph-magnifying-glass"></i> Detect Audio Deepfake</span>
+          </button>
+        </div>
+
+      <!-- Error -->
+      <div id="au-error" style="display:none; margin-top:.75rem; padding:.7rem 1rem;
+           background:rgba(255,77,109,.08); border:1px solid rgba(255,77,109,.4);
+           border-radius:12px; animation: fadeInUp .3s ease both;">
+        <p id="au-error-msg" style="color:var(--fake-color); font-size:.85rem; margin:0; font-weight:600;"><i class="ph ph-warning"></i> Please select an audio file first.</p>
+      </div>
+    </div>
+
+    <!-- Result (if returned) -->
+    {% if result %}
+    <div class="lt-card result-reveal" style="padding:1.5rem; border-color:
+      {% if result.label == 'REAL' %}rgba(0,255,102,.5){% elif result.label == 'FAKE' %}rgba(255,77,109,.5){% else %}rgba(251,191,36,.5){% endif %};">
+
+      <!-- Verdict header -->
+      <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem;">
+        <div style="font-size:2.5rem;">
+          {% if result.label == "REAL" %}<i class="ph ph-check-circle"></i>{% elif result.label == "FAKE" %}<i class="ph ph-warning-circle"></i>{% else %}<i class="ph ph-warning"></i>{% endif %}
+        </div>
+        <div>
+          <p style="color:var(--text-secondary); font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:0;">Detection Result</p>
+          <div style="margin-top:.3rem;">
+            {% if result.label == "REAL" %}
+              <span class="lt-badge-real" style="font-size:1.1rem;"><i class="ph ph-check-circle"></i> REAL</span>
+            {% elif result.label == "FAKE" %}
+              <span class="lt-badge-fake" style="font-size:1.1rem;"><i class="ph ph-warning-circle"></i> FAKE</span>
+            {% else %}
+              <span class="lt-badge-unknown" style="font-size:1.1rem;"><i class="ph ph-warning"></i> {{ result.label }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Confidence meter -->
+      <div style="margin-bottom:1rem;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:.3rem;">
+          <span style="color:var(--text-secondary); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Confidence</span>
+          <span style="color:var(--text-primary); font-weight:700; font-size:.9rem;">
+            <span data-count="{{ result.confidence }}" data-decimals="1">{{ result.confidence }}</span>%
+          </span>
+        </div>
+        <div class="lt-meter-wrap">
+          <div class="lt-meter-bar {% if result.label == 'REAL' %}meter-real{% elif result.label == 'FAKE' %}meter-fake{% else %}meter-warn{% endif %}"
+               style="--pct: {{ result.confidence }}%;"></div>
+        </div>
+      </div>
+
+      {% if audio_file_url %}
+      <audio controls style="width:100%; border-radius:12px;">
+        <source src="{{ audio_file_url }}">
+      </audio>
+      {% endif %}
+
+      <a href="{% url 'ml_app:audio_upload' %}" class="lt-btn" style="margin-top:1rem; background:var(--card-bg); color:var(--accent); border:1px solid var(--card-border); box-shadow:none;">
+        <i class="ph ph-arrows-clockwise"></i> Analyze Another File
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- ── RIGHT PANEL: Info ──────────────────────────────────── -->
+  <div style="display:flex; flex-direction:column; gap:1rem; position:sticky; top:calc(var(--nav-h) + 1rem);">
+
+    <!-- What we detect -->
+    <div class="lt-card anim-slideL delay-1" style="padding:1.5rem;">
+      <h2 style="color:var(--accent); font-size:.95rem; font-weight:700; margin:0 0 1rem; text-transform:uppercase; letter-spacing:.08em;">What We Detect</h2>
+      <div style="display:flex; flex-direction:column; gap:.75rem;">
+        {% for item in "abc" %}
+        <div style="display:flex; gap:.75rem; padding:.75rem; border-radius:12px; border:1px solid var(--card-border); background:var(--bg2); transition:border-color .3s, transform .2s; animation: fadeInUp .5s ease {{ forloop.counter }}00ms both;"
+             onmouseover="this.style.borderColor='var(--card-border-h)'; this.style.transform='translateX(4px)'"
+             onmouseout="this.style.borderColor='var(--card-border)'; this.style.transform=''">
+          <span style="font-size:1.3rem;">
+            {% if forloop.counter == 1 %}<i class="ph ph-robot"></i>{% elif forloop.counter == 2 %}<i class="ph ph-mask-happy"></i>{% else %}<i class="ph ph-microscope"></i>{% endif %}
+          </span>
+          <div>
+            <p style="color:var(--text-primary); font-weight:600; margin:0; font-size:.88rem;">
+              {% if forloop.counter == 1 %}AI Voice Cloning{% elif forloop.counter == 2 %}Voice Conversion{% else %}Synthetic Speech{% endif %}
+            </p>
+            <p style="color:var(--text-secondary); font-size:.78rem; margin:.1rem 0 0;">
+              {% if forloop.counter == 1 %}TTS and neural voice synthesis{% elif forloop.counter == 2 %}GAN-based voice transformation{% else %}Text-to-speech artifacts{% endif %}
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Supported formats -->
+    <div class="lt-card anim-slideL delay-3" style="padding:1.5rem;">
+      <h2 style="color:var(--accent); font-size:.95rem; font-weight:700; margin:0 0 .75rem; text-transform:uppercase; letter-spacing:.08em;">Supported Formats</h2>
+      <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span style="padding:.35rem .9rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.82rem; color:var(--accent); font-weight:700;">.WAV</span>
+        <span style="padding:.35rem .9rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.82rem; color:var(--accent); font-weight:700;">.MP3</span>
+      </div>
+      <p style="color:var(--text-muted); font-size:.78rem; margin:.75rem 0 0;">For best results, use uncompressed WAV files at 16kHz or higher sample rate.</p>
+    </div>
+
+  </div>
+</div>
 
 <script>
-function previewAudio(event) {
-    const file = event.target.files[0];
-    const preview = document.getElementById('audio-preview');
-    const source = document.getElementById('audio-source');
-    if (file) {
-        source.src = URL.createObjectURL(file);
-        preview.style.display = "block";
-        preview.load();
+  function previewAudio(event) {
+    var file = event.target.files ? event.target.files[0] : event;
+    if (!file) return;
+    var preview = document.getElementById('au-preview');
+    var src     = document.getElementById('au-src');
+    var wrap    = document.getElementById('au-preview-wrap');
+    var wave    = document.getElementById('au-waveform');
+    var info    = document.getElementById('au-info');
+    src.src     = URL.createObjectURL(file);
+    preview.load();
+    wrap.style.display = 'block';
+    wave.style.display = 'block';
+    info.textContent   = file.name + ' — ' + (file.size / 1024).toFixed(0) + ' KB';
+    document.getElementById('au-filename').textContent = file.name;
+    document.getElementById('au-filename-wrap').style.display = 'block';
+  }
+
+  var drop = document.getElementById('au-drop');
+  drop.addEventListener('dragover',  function(e){ e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', function()  { drop.classList.remove('drag-over'); });
+  drop.addEventListener('drop', function(e){
+    e.preventDefault(); drop.classList.remove('drag-over');
+    var files = e.dataTransfer.files;
+    if (files.length) {
+      document.getElementById('audio_file').files = files;
+      previewAudio({ target: { files: files } });
     }
-}
+  });
+
+  function validateAudioForm(e) {
+    var f = document.getElementById('audio_file');
+    if (!f.files.length) {
+      e.preventDefault();
+      var errBox = document.getElementById('au-error');
+      document.getElementById('au-error-msg').innerHTML = '<i class="ph ph-warning"></i> Please select a .wav or .mp3 file first.';
+      errBox.style.display = 'block';
+      errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(function(){ errBox.style.display='none'; }, 5000);
+      return;
+    }
+    setTimeout(function() {
+      document.getElementById('au-submit').disabled = true;
+      document.getElementById('au-btn-text').innerHTML = '<i class="ph ph-hourglass-high"></i> Uploading…';
+    }, 10);
+  }
 </script>
 {% endblock %}

@@ -1,109 +1,197 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Audio Upload — LokTruth AI{% endblock %}
 
 {% block content %}
 <style>
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-        margin: 0;
-        padding: 0;
-    }
-    header nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 2rem;
-        background-color: #6c63ff;
-        color: white;
-    }
-    header nav h1 {
-        margin: 0;
-        font-size: 1.5rem;
-    }
-    header nav a {
-        background: white;
-        color: #6c63ff;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-    header nav a:hover {
-        background: #e0e0ff;
-    }
-    .container {
-        max-width: 500px;
-        margin: 2rem auto;
-        text-align: center;
-    }
-    #upload {
-        border: 3px dashed #6c63ff;
-        border-radius: 12px;
-        padding: 2rem;
-        background: rgba(255,255,255,0.95);
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    #upload:hover {
-        background: rgba(108, 99, 255, 0.1);
-    }
-    #upload p {
-        margin: 0;
-        font-weight: 600;
-        color: #6c63ff;
-    }
-    .btn {
-        margin-top: 1rem;
-        padding: 0.8rem 1.5rem;
-        background: linear-gradient(135deg, #6c63ff, #9b8cff);
-        color: white;
-        border: none;
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: 600;
-        width: 100%;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-    .btn:hover {
-        background: linear-gradient(135deg, #574bdb, #7b6be8);
-    }
-    #result {
-        margin-top: 2rem;
-        padding: 1.5rem;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.95);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
+  .au2-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    min-height: calc(100dvh - var(--nav-h));
+    align-items: start;
+    padding: 2rem;
+  }
+  @media (max-width:860px) { .au2-grid { grid-template-columns:1fr; padding:1rem; } }
+  .waveform { display:flex; align-items:center; justify-content:center; gap:3px; height:48px; margin:.75rem 0; }
+  .waveform-bar { width:4px; border-radius:999px; background:var(--accent); opacity:.5; animation:waveAnim 1.2s ease-in-out infinite; }
+  @keyframes waveAnim { 0%,100%{ height:8px; opacity:.3; } 50%{ height:40px; opacity:1; } }
 </style>
 
-<header>
-    <nav aria-label="Main navigation">
-        <h1>Audio Classification</h1>
-        <a href="{% url 'ml_app:index' %}">Quit</a>
-    </nav>
-</header>
+<div class="page-hero anim-fadeInDown">
+  <div style="font-size:2.5rem; animation:bounce 2s ease-in-out infinite; color:var(--accent);"><i class="ph ph-microphone-stage"></i></div>
+  <div>
+    <h1 style="color:var(--accent); font-size:1.5rem; font-weight:800; margin:0;">Audio Classification</h1>
+    <p style="color:var(--text-secondary); font-size:.88rem; margin:0;">Upload a .wav or .mp3 file to classify as real or AI-generated</p>
+  </div>
+  <a href="{% url 'ml_app:index' %}" class="lt-back" style="margin-left:auto; flex-shrink:0;">← Home</a>
+</div>
 
-<main>
-    <section class="container">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div id="upload">
-                <p>Upload audio (.wav or .mp3)</p>
-                <input type="file" name="audio_file" accept=".wav,.mp3" required>
-            </div>
-            <button type="submit" class="btn">Proceed</button>
-        </form>
-    </section>
+<div class="au2-grid">
 
-    <section class="container" id="result">
-        <h2>Output</h2>
-        {% if result %}
-            <p>{{ result }}</p>
-        {% else %}
-            <p>Please upload a .wav or .mp3 file to analyze.</p>
-        {% endif %}
-    </section>
-</main>
+  <div style="display:flex; flex-direction:column; gap:1rem;">
+    <form method="post" enctype="multipart/form-data" id="au2-form" data-lt-detect="audio" style="display:contents;">
+      {% csrf_token %}
+    <div class="lt-card anim-slideR" style="padding:1.5rem;">
+      <h2 style="color:var(--text-primary); font-size:1rem; font-weight:700; margin:0 0 1rem; display:flex; align-items:center; gap:.5rem;">
+        <span style="color:var(--accent);"><i class="ph ph-folder-open"></i></span> Choose Audio File
+      </h2>
+
+      <div class="lt-drop" id="au2-drop" role="button" tabindex="0"
+           onclick="document.getElementById('audio_file_input').click()"
+           onkeydown="if(event.key==='Enter') this.click()">
+        <span class="drop-icon"><i class="ph ph-waveform"></i></span>
+        <p style="color:var(--accent); font-weight:700; margin:0; font-size:1.05rem;">Drop your audio here</p>
+        <p style="color:var(--text-secondary); font-size:.82rem; margin:.4rem 0 0;">or click to browse — WAV or MP3</p>
+        <div id="au2-filename-wrap" style="display:none; margin-top:.75rem; padding:.5rem 1rem; background:var(--accent-dim); border-radius:999px; border:1px solid var(--card-border);">
+          <p id="au2-filename" style="color:var(--accent); font-size:.82rem; font-weight:600; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></p>
+        </div>
+        <input type="file" id="audio_file_input" name="audio_file" accept=".wav,.mp3" required style="display:none;">
+      </div>
+
+      <!-- Waveform animation -->
+      <div id="au2-wave" style="display:none; animation:fadeIn .5s ease both;">
+        <div class="waveform">
+          <div class="waveform-bar" style="animation-delay:0ms;"></div>
+          <div class="waveform-bar" style="animation-delay:100ms;"></div>
+          <div class="waveform-bar" style="animation-delay:200ms;"></div>
+          <div class="waveform-bar" style="animation-delay:300ms;"></div>
+          <div class="waveform-bar" style="animation-delay:400ms;"></div>
+          <div class="waveform-bar" style="animation-delay:500ms;"></div>
+          <div class="waveform-bar" style="animation-delay:600ms;"></div>
+          <div class="waveform-bar" style="animation-delay:700ms;"></div>
+          <div class="waveform-bar" style="animation-delay:800ms;"></div>
+          <div class="waveform-bar" style="animation-delay:900ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1000ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1100ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1200ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1300ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1400ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1500ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1600ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1700ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1800ms;"></div>
+          <div class="waveform-bar" style="animation-delay:1900ms;"></div>
+          <div class="waveform-bar" style="animation-delay:2000ms;"></div>
+          <div class="waveform-bar" style="animation-delay:2100ms;"></div>
+        </div>
+      </div>
+
+      <!-- Audio preview -->
+      <div id="au2-preview-wrap" style="display:none; margin-top:.75rem; animation:scaleIn .4s ease both;">
+        <audio id="au2-preview" controls style="width:100%; border-radius:12px;">
+          <source id="au2-src" src="">
+        </audio>
+        <p id="au2-info" style="color:var(--text-muted); font-size:.75rem; margin:.4rem 0 0; text-align:center;"></p>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <button type="submit" class="lt-btn" id="au2-submit" onclick="validateAu2(event)">
+          <span id="au2-btn-text"><i class="ph ph-magnifying-glass"></i> Proceed</span>
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div id="au2-error" style="display:none; margin-top:.75rem; padding:.7rem 1rem;
+           background:rgba(255,77,109,.08); border:1px solid rgba(255,77,109,.4); border-radius:12px;">
+        <p style="color:var(--fake-color); font-size:.85rem; margin:0; font-weight:600;"><i class="ph ph-warning"></i> Please select a .wav or .mp3 file first.</p>
+      </div>
+    </div>
+    </form>
+
+    <!-- Result (inline if returned) -->
+    {% if result %}
+    <div class="lt-card" style="padding:1.5rem; animation:verdictIn .7s ease both; border-color:rgba(0,255,102,.4);">
+      <p style="color:var(--accent); font-weight:700; font-size:.9rem; margin:0 0 .75rem;"><i class="ph ph-chart-bar"></i> Output</p>
+      <div style="padding:.85rem 1rem; background:var(--bg2); border-radius:12px; border:1px solid var(--card-border);">
+        <p style="color:var(--text-primary); margin:0;">{{ result }}</p>
+      </div>
+    </div>
+    {% else %}
+    <div class="lt-card anim-fadeInUp delay-3" style="padding:1.25rem; border-style:dashed;">
+      <p style="color:var(--text-muted); font-size:.88rem; text-align:center; margin:0;"><i class="ph ph-clipboard-text"></i> Output will appear here after analysis</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Right: tips -->
+  <div style="display:flex; flex-direction:column; gap:1rem; position:sticky; top:calc(var(--nav-h) + 1rem);">
+    <div class="lt-card anim-slideL delay-1" style="padding:1.5rem;">
+      <h2 style="color:var(--accent); font-size:.95rem; font-weight:700; margin:0 0 1rem; text-transform:uppercase; letter-spacing:.08em;">Audio Tips</h2>
+      <div style="display:flex; flex-direction:column; gap:.6rem;">
+        <div style="padding:.75rem; border-radius:12px; border:1px solid var(--card-border); background:var(--bg2); display:flex; gap:.75rem; transition:border-color .3s,transform .2s;"
+             onmouseover="this.style.borderColor='var(--card-border-h)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--card-border)';this.style.transform=''">
+          <span style="font-size:1.2rem;"><i class="ph ph-microphone"></i></span>
+          <div>
+            <p style="color:var(--text-primary); font-weight:600; font-size:.85rem; margin:0;">Use Uncompressed WAV</p>
+            <p style="color:var(--text-secondary); font-size:.75rem; margin:.1rem 0 0;">16kHz or higher gives the best accuracy</p>
+          </div>
+        </div>
+        <div style="padding:.75rem; border-radius:12px; border:1px solid var(--card-border); background:var(--bg2); display:flex; gap:.75rem; transition:border-color .3s,transform .2s;"
+             onmouseover="this.style.borderColor='var(--card-border-h)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--card-border)';this.style.transform=''">
+          <span style="font-size:1.2rem;"><i class="ph ph-speaker-slash"></i></span>
+          <div>
+            <p style="color:var(--text-primary); font-weight:600; font-size:.85rem; margin:0;">Minimize Background Noise</p>
+            <p style="color:var(--text-secondary); font-size:.75rem; margin:.1rem 0 0;">Clean audio improves detection accuracy</p>
+          </div>
+        </div>
+        <div style="padding:.75rem; border-radius:12px; border:1px solid var(--card-border); background:var(--bg2); display:flex; gap:.75rem; transition:border-color .3s,transform .2s;"
+             onmouseover="this.style.borderColor='var(--card-border-h)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--card-border)';this.style.transform=''">
+          <span style="font-size:1.2rem;"><i class="ph ph-timer"></i></span>
+          <div>
+            <p style="color:var(--text-primary); font-weight:600; font-size:.85rem; margin:0;">Minimum 3 Seconds</p>
+            <p style="color:var(--text-secondary); font-size:.75rem; margin:.1rem 0 0;">Longer samples produce more reliable results</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lt-card anim-slideL delay-3" style="padding:1.5rem;">
+      <h2 style="color:var(--accent); font-size:.95rem; font-weight:700; margin:0 0 .75rem; text-transform:uppercase; letter-spacing:.08em;">Supported Formats</h2>
+      <div style="display:flex; gap:.5rem; margin-bottom:.75rem;">
+        <span style="padding:.35rem .9rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.82rem; color:var(--accent); font-weight:700;">.WAV</span>
+        <span style="padding:.35rem .9rem; background:var(--accent-dim); border:1px solid var(--card-border); border-radius:999px; font-size:.82rem; color:var(--accent); font-weight:700;">.MP3</span>
+      </div>
+      <p style="color:var(--text-muted); font-size:.78rem; margin:0; line-height:1.5;">Other formats may be converted to WAV before analysis. Internet connection required for cloud model processing.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  var drop2 = document.getElementById('au2-drop');
+  drop2.addEventListener('dragover', function(e){ e.preventDefault(); drop2.classList.add('drag-over'); });
+  drop2.addEventListener('dragleave', function(){ drop2.classList.remove('drag-over'); });
+  drop2.addEventListener('drop', function(e){
+    e.preventDefault(); drop2.classList.remove('drag-over');
+    var files = e.dataTransfer.files;
+    if (files.length) { document.getElementById('audio_file_input').files = files; handleFileSelect(files[0]); }
+  });
+  document.getElementById('audio_file_input').addEventListener('change', function(e){
+    if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+  });
+  function handleFileSelect(file) {
+    document.getElementById('au2-filename').textContent = file.name;
+    document.getElementById('au2-filename-wrap').style.display = 'block';
+    document.getElementById('au2-wave').style.display = 'block';
+    var src = document.getElementById('au2-src');
+    var preview = document.getElementById('au2-preview');
+    src.src = URL.createObjectURL(file);
+    preview.load();
+    document.getElementById('au2-preview-wrap').style.display = 'block';
+    document.getElementById('au2-info').textContent = file.name + ' — ' + (file.size/1024).toFixed(0) + ' KB';
+  }
+  function validateAu2(e) {
+    if (!document.getElementById('audio_file_input').files.length) {
+      e.preventDefault();
+      var err = document.getElementById('au2-error');
+      err.style.display = 'block';
+      setTimeout(function(){ err.style.display='none'; }, 4000);
+      return;
+    }
+    setTimeout(function() {
+      document.getElementById('au2-submit').disabled = true;
+      document.getElementById('au2-btn-text').innerHTML = '<i class="ph ph-hourglass-high"></i> Uploading…';
+    }, 10);
+  }
+</script>
 {% endblock %}

@@ -13,7 +13,11 @@ This project has been developed by Bibek Meher (Team: Anshuman Mishra, Karan Dev
 
 ## ✨ Features
 - 🎥 **Video DeepFake Detection** using CNN (ResNeXt) + LSTM sequence modeling.
-- 🌐 **Web Application** (Django) for uploading and detecting fakes in videos.
+- 🖼️ **Image & Audio Detection Framework** for expanding capabilities to other media types.
+- 🌐 **Modern Web Application** (Django) featuring a responsive, full-screen glassmorphic design.
+- 🌗 **Dynamic Theme System** with seamless toggle between Dark Mode and Light Mode.
+- 🖱️ **Interactive Particle Cursor** that tracks movement and responds to clicks with physics-based physics trails.
+- ⏳ **Cinematic Analysis UI** featuring animated scanning overlays while processing media.
 - 🐳 **Dockerized** for easy deployment on any machine.
 - ⚡ Works on **CPU-only systems** (Non-CUDA/AMD GPU supported).
 - 📊 Provides evaluation metrics: Accuracy, Precision, Recall, F1.
@@ -23,10 +27,11 @@ This project has been developed by Bibek Meher (Team: Anshuman Mishra, Karan Dev
 ## 📂 Project Structure
 ```
 AI-DeepFake-Detection/
-│── Django_Application/    # Web app for video upload & detection
+│── Django_Application/    # Web app for video upload & detection (Templates/Static/Views)
 │── requirements.txt       # Python dependencies
 │── Dockerfile             # Container setup
 │── README.md              # Project description
+│── MODEL.md               # Detailed Model specifications
 ```
 
 ---
@@ -75,7 +80,7 @@ More details: [MODEL.md](MODEL.md)
 ## 🚀 Roadmap
 - [ ] Add live streaming detection  
 - [ ] Optimize inference with ONNX / TensorRT  
-- [ ] Add progress bar for large video uploads  
+- [x] Add progress bar for large video uploads (Completed via Cinematic UI overlay)
 - [ ] REST API endpoints with Django REST Framework  
 
 ---

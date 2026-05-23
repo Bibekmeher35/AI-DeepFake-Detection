@@ -1,165 +1,160 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Detailed Prediction</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #6c63ff;
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-        }
-        header a {
-            text-decoration: none;
-            color: #6c63ff;
-            background: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        header a:hover {
-            background: #e0e0ff;
-        }
-        main {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        section {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        section h2 {
-            border-bottom: 2px solid #6c63ff;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        p {
-            margin: 0.5rem 0;
-            font-size: 1.2rem;
-            color: #555;
-        }
-        video, audio {
-            display: block;
-            margin: 1rem 0;
-            width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .info {
-            font-size: 1.1rem;
-            color: #777;
-            margin-top: 0.3rem;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Prediction Details</h1>
-        <a href="{% url 'ml_app:index' %}">Back to Home</a>
-    </header>
+{% block title %}Prediction Details — LokTruth AI{% endblock %}
 
-    <main>
-        <!-- Video Analysis Section -->
-        <section>
-            <h2>Video Analysis</h2>
-            {% if video_file %}
-                <video src="{{ video_file }}" controls></video>
-            {% endif %}
+{% block content %}
+<div style="min-height:calc(100dvh - var(--nav-h)); padding:2rem; max-width:100%;">
 
-            <p><strong>Video Prediction:</strong>
-                {% if video_result %}
-                    {% if video_result == "real" %}
-                        The video appears to be real (not manipulated).
-                    {% elif video_result == "deepfake" %}
-                        The video appears to be a deepfake (manipulated content detected).
-                    {% else %}
-                        {{ video_result }}
-                    {% endif %}
-                {% else %}
-                    No video prediction available.
-                {% endif %}
-            </p>
-            <p class="info">
-                This is an overall video-level prediction based on analyzing all frames.
-            </p>
+  <!-- Header -->
+  <div class="anim-fadeInDown" style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+    <div style="font-size:2rem; color:var(--accent);"><i class="ph ph-chart-bar"></i></div>
+    <div>
+      <h1 style="color:var(--accent); font-size:1.4rem; font-weight:800; margin:0; text-shadow:0 0 14px rgba(0,255,102,.3);">Detailed Prediction Report</h1>
+      <p style="color:var(--text-secondary); font-size:.85rem; margin:0;">In-depth analysis of every metric from your file</p>
+    </div>
+    <a href="{% url 'ml_app:index' %}" class="lt-back" style="margin-left:auto;">← Home</a>
+  </div>
 
-            <p><strong>Face Summary:</strong>
-                {% if face_summary %}
-                    {{ face_summary }}
-                {% else %}
-                    No faces detected in the video.
-                {% endif %}
-            </p>
-            <p class="info">
-                Shows how many faces were detected in the video and how many were classified as real or deepfake.
-            </p>
+  <!-- Two-column layout -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
 
-            <p><strong>FOMM Score:</strong>
-                {% if fomm_score %}
-                    {{ fomm_score }}
-                {% else %}
-                    Not available
-                {% endif %}
-            </p>
-            <p class="info">
-                FOMM (First Order Motion Model) score indicates how closely the predicted facial movements match natural motion. Higher score suggests more realistic motion.
-            </p>
+    <!-- ── VIDEO ANALYSIS ───────────────────────────────────── -->
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div class="lt-card reveal" style="padding:1.5rem;">
+        <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--card-border);">
+          <span style="font-size:1.5rem; color:var(--accent);"><i class="ph ph-video-camera"></i></span>
+          <h2 style="color:var(--accent); font-size:1rem; font-weight:700; margin:0; text-transform:uppercase; letter-spacing:.08em;">Video Analysis</h2>
+        </div>
 
-            <p><strong>Identity Variance Score:</strong>
-                {% if identity_score %}
-                    {{ identity_score }}
-                {% else %}
-                    Not available
-                {% endif %}
-            </p>
-            <p class="info">
-                Measures consistency of a person's identity across frames. High variance may indicate manipulated or inconsistent faces.
-            </p>
-        </section>
+        {% if video_file %}
+        <video src="{{ video_file }}" controls
+               style="width:100%; border-radius:12px; margin-bottom:1.25rem; max-height:280px; background:#000; box-shadow:var(--shadow);"></video>
+        {% endif %}
 
-        <!-- Audio Analysis Section -->
-        <section>
-            <h2>Audio Analysis</h2>
-            {% if audio_file_url %}
-                <audio controls src="{{ audio_file_url }}"></audio>
-            {% endif %}
-
-            {% if audio_result %}
-                <p><strong>Audio Prediction:</strong>
-                    The audio was analyzed and predicted as <strong>{{ audio_result }}</strong>.
-                </p>
-                {% if audio_result_confidence %}
-                    <p>Confidence: {{ audio_result_confidence|floatformat:2 }}%</p>
-                {% endif %}
+        <!-- Video prediction -->
+        <div style="padding:1rem; background:var(--bg2); border-radius:12px; border:1px solid var(--card-border); margin-bottom:.75rem; transition:border-color .3s;"
+             onmouseover="this.style.borderColor='var(--card-border-h)'" onmouseout="this.style.borderColor='var(--card-border)'">
+          <p style="color:var(--text-muted); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:0 0 .5rem;">Video Prediction</p>
+          <div>
+            {% if video_result %}
+              {% if video_result == "real" %}
+                <span class="lt-badge-real" style="margin-bottom:.5rem;"><i class="ph ph-check-circle"></i> REAL</span>
+                <p style="color:var(--text-secondary); font-size:.85rem; margin:.5rem 0 0; line-height:1.5;">The video appears to be authentic with no manipulation detected in the facial regions.</p>
+              {% elif video_result == "deepfake" %}
+                <span class="lt-badge-fake" style="margin-bottom:.5rem;"><i class="ph ph-warning-circle"></i> DEEPFAKE</span>
+                <p style="color:var(--text-secondary); font-size:.85rem; margin:.5rem 0 0; line-height:1.5;">AI-generated manipulation was detected in the facial regions of this video.</p>
+              {% else %}
+                <span class="lt-badge-unknown"><i class="ph ph-warning"></i> {{ video_result }}</span>
+              {% endif %}
             {% else %}
-                <p>No audio prediction available.</p>
+              <p style="color:var(--text-muted); font-size:.88rem; margin:0;">No video prediction available for this session.</p>
             {% endif %}
+          </div>
+          <p style="color:var(--text-muted); font-size:.75rem; margin:.75rem 0 0; line-height:1.4;"><i class="ph ph-push-pin"></i> Overall video-level prediction based on analyzing all extracted frames.</p>
+        </div>
 
-            <p class="info">
-                Audio prediction analyzes whether the sound is real or generated (deepfake). Confidence score indicates reliability of the prediction.
+        <!-- Face summary -->
+        <div style="padding:1rem; background:var(--bg2); border-radius:12px; border:1px solid var(--card-border); margin-bottom:.75rem; transition:border-color .3s;"
+             onmouseover="this.style.borderColor='var(--card-border-h)'" onmouseout="this.style.borderColor='var(--card-border)'">
+          <p style="color:var(--text-muted); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:0 0 .5rem;">Face Summary</p>
+          <p style="color:var(--text-primary); font-size:.9rem; margin:0; line-height:1.5;">
+            {% if face_summary %}{{ face_summary }}{% else %}<span style="color:var(--text-muted);">No faces detected.</span>{% endif %}
+          </p>
+          <p style="color:var(--text-muted); font-size:.75rem; margin:.5rem 0 0;">Total detected faces classified as real or deepfake across all frames.</p>
+        </div>
+
+        <!-- FOMM + Identity in mini grid -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem;">
+          <div style="padding:.85rem; background:var(--bg2); border-radius:12px; border:1px solid var(--card-border); transition:border-color .3s;"
+               onmouseover="this.style.borderColor='var(--card-border-h)'" onmouseout="this.style.borderColor='var(--card-border)'">
+            <p style="color:var(--text-muted); font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin:0 0 .35rem;">FOMM Score</p>
+            <p style="color:var(--text-primary); font-size:1.1rem; font-weight:700; margin:0;">
+              {% if fomm_score %}<span data-count="{{ fomm_score }}" data-decimals="2">{{ fomm_score }}</span>{% else %}<span style="color:var(--text-muted); font-size:.9rem;">N/A</span>{% endif %}
             </p>
-        </section>
-    </main>
-</body>
-</html>
+            <p style="color:var(--text-muted); font-size:.7rem; margin:.3rem 0 0; line-height:1.4;">First Order Motion Model — facial motion naturalness</p>
+          </div>
+          <div style="padding:.85rem; background:var(--bg2); border-radius:12px; border:1px solid var(--card-border); transition:border-color .3s;"
+               onmouseover="this.style.borderColor='var(--card-border-h)'" onmouseout="this.style.borderColor='var(--card-border)'">
+            <p style="color:var(--text-muted); font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin:0 0 .35rem;">Identity Variance</p>
+            <p style="color:var(--text-primary); font-size:1.1rem; font-weight:700; margin:0;">
+              {% if identity_score %}<span data-count="{{ identity_score }}" data-decimals="2">{{ identity_score }}</span>{% else %}<span style="color:var(--text-muted); font-size:.9rem;">N/A</span>{% endif %}
+            </p>
+            <p style="color:var(--text-muted); font-size:.7rem; margin:.3rem 0 0; line-height:1.4;">High variance may indicate face inconsistency</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AUDIO ANALYSIS ───────────────────────────────────── -->
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div class="lt-card reveal delay-2" style="padding:1.5rem;">
+        <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--card-border);">
+          <span style="font-size:1.5rem; color:var(--accent);"><i class="ph ph-waveform"></i></span>
+          <h2 style="color:var(--accent); font-size:1rem; font-weight:700; margin:0; text-transform:uppercase; letter-spacing:.08em;">Audio Analysis</h2>
+        </div>
+
+        {% if audio_file_url %}
+        <audio controls src="{{ audio_file_url }}"
+               style="width:100%; margin-bottom:1.25rem; border-radius:12px;"></audio>
+        {% endif %}
+
+        {% if audio_result %}
+        <div style="padding:1rem; background:var(--bg2); border-radius:12px; border:1px solid var(--card-border); margin-bottom:.75rem;">
+          <p style="color:var(--text-muted); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:0 0 .5rem;">Audio Prediction</p>
+          <div style="margin-bottom:.5rem;">
+            {% if audio_result == "REAL" %}<span class="lt-badge-real"><i class="ph ph-check-circle"></i> REAL</span>
+            {% elif audio_result == "FAKE" %}<span class="lt-badge-fake"><i class="ph ph-warning-circle"></i> FAKE</span>
+            {% else %}<span class="lt-badge-unknown"><i class="ph ph-warning"></i> {{ audio_result }}</span>{% endif %}
+          </div>
+          <p style="color:var(--text-secondary); font-size:.85rem; margin:.5rem 0 0; line-height:1.5;">
+            The audio was analyzed for synthetic voice artifacts using an LSTM model trained on mel-spectrograms.
+          </p>
+          {% if audio_result_confidence %}
+          <div style="margin-top:.75rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:.3rem;">
+              <span style="color:var(--text-muted); font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Confidence</span>
+              <span style="color:var(--text-primary); font-weight:700; font-size:.88rem;">{{ audio_result_confidence|floatformat:2 }}%</span>
+            </div>
+            <div class="lt-meter-wrap">
+              <div class="lt-meter-bar {% if audio_result == 'REAL' %}meter-real{% elif audio_result == 'FAKE' %}meter-fake{% else %}meter-warn{% endif %}"
+                   style="--pct: {{ audio_result_confidence }}%;"></div>
+            </div>
+          </div>
+          {% endif %}
+          <p style="color:var(--text-muted); font-size:.75rem; margin:.75rem 0 0;"><i class="ph ph-push-pin"></i> Confidence score indicates how certain the model is about this classification.</p>
+        </div>
+        {% else %}
+        <div style="padding:1rem; background:var(--bg2); border-radius:12px; border:1px solid var(--card-border); text-align:center;">
+          <p style="color:var(--text-muted); font-size:.88rem; margin:0;">No audio was analyzed in this session.</p>
+        </div>
+        {% endif %}
+
+        <!-- Explanation card -->
+        <div style="padding:1rem; background:rgba(0,255,102,.04); border:1px solid var(--card-border); border-radius:12px;">
+          <p style="color:var(--accent); font-size:.78rem; font-weight:700; margin:0 0 .4rem; text-transform:uppercase; letter-spacing:.08em;">How Audio Detection Works</p>
+          <p style="color:var(--text-secondary); font-size:.8rem; margin:0; line-height:1.6;">
+            The audio is converted to a mel-spectrogram, which captures frequency patterns over time. Our LSTM model identifies subtle artifacts in the spectrogram that are characteristic of AI-generated voices — patterns invisible to human ears but detectable by neural networks.
+          </p>
+        </div>
+      </div>
+
+      <!-- Navigation actions -->
+      <div class="lt-card reveal delay-4" style="padding:1.25rem;">
+        <p style="color:var(--accent); font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin:0 0 .75rem;">Analyze Another File</p>
+        <div style="display:flex; flex-direction:column; gap:.6rem;">
+          <a href="{% url 'ml_app:video_upload' %}" class="lt-btn" style="font-size:.9rem;"><i class="ph ph-video-camera"></i> Upload New Video</a>
+          <a href="{% url 'ml_app:audio_upload' %}" class="lt-btn" style="font-size:.9rem; background:var(--card-bg); color:var(--accent); border:1px solid var(--card-border); box-shadow:none;"><i class="ph ph-waveform"></i> Upload New Audio</a>
+          <a href="{% url 'ml_app:index' %}" class="lt-back" style="text-align:center; padding:.5rem; border-radius:12px; border:1px solid var(--card-border);">← Back to Home</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  @media (max-width:860px) {
+    div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+  }
+</style>
+{% endblock %}

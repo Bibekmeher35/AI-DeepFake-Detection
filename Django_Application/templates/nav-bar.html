@@ -1,21 +1,204 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-2">
-    <!-- <a class="navbar-brand" href="#">Navbar</a> -->
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+{% load static %}
+<header class="sticky top-0 z-50" id="lt-header" style="
+  background: rgba(8,14,31,0.88);
+  border-bottom: 1px solid var(--card-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  transition: background .3s, border-color .3s, box-shadow .3s;
+">
+  <div style="display:flex; align-items:center; justify-content:space-between; padding:0 1.5rem; width:100%; max-width:100%;">
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'ml_app:index' %}">Home</a>
-            </li>
-            <!-- <li class="nav-item">
-                <a class="nav-link" href="{%url 'ml_app:about'%}">About</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">GitHub</a>
-            </li> -->
-        </ul>
+    <!-- Brand -->
+    <a href="{% url 'ml_app:index' %}" style="text-decoration:none; display:flex; align-items:center; gap:12px; flex-shrink:0;" aria-label="LokTruth Home" class="lt-brand-link">
+      <div class="lt-logo-wrapper">
+        <div class="lt-logo-glow"></div>
+        <div class="lt-logo-inner">
+          <i class="ph ph-shield-check"></i>
+        </div>
+      </div>
+      <div>
+        <span style="font-size:1.25rem; font-weight:800; color:var(--text-primary); letter-spacing:-.5px; display:block; line-height:1.1;">Lok<span style="color:var(--accent); text-shadow:0 0 14px rgba(0,255,102,.4);">Truth</span></span>
+        <span style="font-size:.62rem; color:var(--text-secondary); font-weight:700; letter-spacing:.18em; text-transform:uppercase;">AI Detection</span>
+      </div>
+    </a>
+
+    <!-- Desktop nav links -->
+    <nav class="hidden md:flex items-center" style="gap:2px;" aria-label="Main navigation">
+      {% with request.resolver_match.url_name as current %}
+      <a href="{% url 'ml_app:index' %}"        class="lt-nav-link {% if current == 'index' %}active{% endif %}"><i class="ph ph-house"></i> Home</a>
+      <a href="{% url 'ml_app:audio_upload' %}" class="lt-nav-link {% if current == 'audio_upload' %}active{% endif %}"><i class="ph ph-waveform"></i> Audio</a>
+      <a href="{% url 'ml_app:upload_image' %}" class="lt-nav-link {% if current == 'upload_image' %}active{% endif %}"><i class="ph ph-image"></i> Image</a>
+      <a href="{% url 'ml_app:video_upload' %}" class="lt-nav-link {% if current == 'video_upload' %}active{% endif %}"><i class="ph ph-video-camera"></i> Video</a>
+      {% endwith %}
+    </nav>
+
+    <!-- Right side actions -->
+    <div style="display:flex; align-items:center; gap:.5rem;">
+      <!-- Theme toggle desktop -->
+      <button class="lt-theme-toggle" aria-label="Toggle dark/light mode" style="
+        display:none;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 999px;
+        padding: .4rem .85rem;
+        cursor: pointer;
+        color: var(--accent);
+        font-size: .95rem;
+        transition: border-color .2s, background .2s;
+        align-items: center; gap: .35rem;
+      " id="lt-theme-desktop" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--card-border)'">
+        <span class="lt-theme-icon"><i class="ph ph-moon"></i></span>
+      </button>
+
+      <!-- Mobile: theme + hamburger -->
+      <button class="lt-theme-toggle md:hidden" aria-label="Toggle theme" style="
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 999px;
+        padding: .35rem .75rem;
+        cursor: pointer;
+        color: var(--accent);
+        font-size: .88rem;
+      ">
+        <span class="lt-theme-icon"><i class="ph ph-moon"></i></span>
+      </button>
+
+      <button id="lt-menu-btn" class="md:hidden" aria-label="Open menu" aria-expanded="false" style="
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: .45rem .55rem;
+        cursor: pointer;
+        color: var(--accent);
+        transition: background .2s;
+      ">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
     </div>
-</nav>
+  </div>
+
+  <!-- Mobile dropdown -->
+  <div id="lt-mobile-menu" class="hidden absolute right-4 w-52 rounded-2xl shadow-2xl z-50" style="
+    top: calc(var(--nav-h) + 8px);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: .5rem;
+    overflow: hidden;
+  ">
+    <a href="{% url 'ml_app:index' %}"        class="lt-mobile-link"><i class="ph ph-house"></i> Home</a>
+    <a href="{% url 'ml_app:audio_upload' %}" class="lt-mobile-link"><i class="ph ph-waveform"></i> Audio Detection</a>
+    <a href="{% url 'ml_app:upload_image' %}" class="lt-mobile-link"><i class="ph ph-image"></i> Image Detection</a>
+    <a href="{% url 'ml_app:video_upload' %}" class="lt-mobile-link"><i class="ph ph-video-camera"></i> Video Detection</a>
+    <div style="height:1px; background:var(--card-border); margin:.4rem .5rem;"></div>
+    <button class="lt-theme-toggle lt-mobile-link" style="width:100%; text-align:left; background:none; border:none; cursor:pointer; color:var(--accent); font-family:inherit; font-size:.9rem;">
+      <span class="lt-theme-icon"><i class="ph ph-moon"></i></span> <span>Toggle Theme</span>
+    </button>
+  </div>
+</header>
+
+<style>
+  /* Premium Logo Icon */
+  .lt-brand-link:hover .lt-logo-inner {
+    transform: rotate(-8deg) scale(1.08);
+    border-color: var(--card-border-h);
+    box-shadow: inset 0 0 12px rgba(0,255,102,0.15), 0 0 20px rgba(0,255,102,0.25);
+    color: #fff;
+  }
+  .lt-brand-link:hover .lt-logo-glow {
+    opacity: 0.6;
+    transform: scale(1.15);
+  }
+  body.light-mode .lt-brand-link:hover .lt-logo-inner {
+    color: var(--accent);
+    box-shadow: inset 0 0 12px rgba(0,85,204,0.15), 0 0 20px rgba(0,85,204,0.25);
+  }
+  .lt-logo-wrapper {
+    position: relative;
+    width: 42px; height: 42px;
+    flex-shrink: 0;
+  }
+  .lt-logo-glow {
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    filter: blur(12px);
+    opacity: 0.25;
+    border-radius: 12px;
+    transition: opacity .3s, transform .3s;
+    animation: glowPulse 4s infinite alternate;
+  }
+  .lt-logo-inner {
+    position: relative;
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.25));
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    color: var(--accent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1), border-color .3s, box-shadow .3s, color .3s;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.2);
+  }
+  body.light-mode .lt-logo-inner {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,244,255,0.5));
+    box-shadow: inset 0 0 8px rgba(255,255,255,0.5);
+  }
+  body.light-mode .lt-brand-link span span { text-shadow: none !important; }
+  .lt-nav-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .45rem .9rem; border-radius: 10px;
+    font-weight: 600; font-size: .88rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color .2s, background .2s;
+    position: relative;
+  }
+  .lt-nav-link:hover, .lt-nav-link.active {
+    color: var(--accent);
+    background: var(--accent-dim);
+    text-decoration: none;
+  }
+  .lt-nav-link.active::after {
+    content: '';
+    position: absolute; bottom: -2px; left: 20%; right: 20%;
+    height: 2px; background: var(--accent);
+    border-radius: 999px;
+  }
+  .lt-mobile-link {
+    display: block; padding: .65rem .85rem;
+    font-weight: 600; font-size: .9rem;
+    color: var(--text-secondary); text-decoration: none;
+    border-radius: 10px;
+    transition: color .2s, background .2s;
+  }
+  .lt-mobile-link:hover { color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+
+  @media (min-width:768px) {
+    #lt-theme-desktop { display: inline-flex !important; }
+  }
+
+  /* Shrink nav on scroll */
+  header.scrolled {
+    background: rgba(5,10,20,0.96) !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  body.light-mode header { background: rgba(240,244,255,0.92) !important; }
+  body.light-mode header.scrolled { background: rgba(240,244,255,0.98) !important; }
+  body.light-mode .lt-nav-link:hover, body.light-mode .lt-nav-link.active { color: var(--accent); background: var(--accent-dim); }
+</style>
+
+<script>
+  window.addEventListener('scroll', function(){
+    var h = document.getElementById('lt-header');
+    if (h) h.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+</script>

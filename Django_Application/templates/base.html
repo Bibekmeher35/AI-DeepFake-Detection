@@ -4,37 +4,1013 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Bootstrap CSS -->
+    <meta name="description" content="LokTruth AI — Advanced deepfake detection for audio, image, and video using deep learning.">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}">
-    
-    <!-- jQuery UI CSS -->
     <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" href="{% static 'favicon.ico' %}?v=2" type="image/x-icon">
 
-    <!-- Custom styles -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="icon" href="{% static 'ml_app/favicon.ico' %}" type="image/x-icon">
+    <style>
+      /* ═══════════════════════════════════════════════════════════
+         DESIGN TOKENS
+      ═══════════════════════════════════════════════════════════ */
+      :root {
+        --accent:          #00FF66;
+        --accent-dim:      rgba(0,255,102,0.18);
+        --accent-hover:    #00cc52;
+        --bg:              #080e1f;
+        --bg2:             #0d1530;
+        --card-bg:         rgba(13,21,48,0.82);
+        --card-border:     rgba(0,255,102,0.22);
+        --card-border-h:   rgba(0,255,102,0.55);
+        --text-primary:    #f0f4ff;
+        --text-secondary:  #8892b0;
+        --text-muted:      #4a5568;
+        --shadow:          0 8px 40px rgba(0,0,0,0.6);
+        --shadow-glow:     0 0 40px rgba(0,255,102,0.2);
+        --nav-h:           64px;
+        --real-color:      #00FF66;
+        --fake-color:      #ff4d6d;
+        --warn-color:      #fbbf24;
+      }
+      body.light-mode {
+        --accent:          #0055cc;
+        --accent-dim:      rgba(0,85,204,0.12);
+        --accent-hover:    #003d99;
+        --bg:              #f0f4ff;
+        --bg2:             #e8eeff;
+        --card-bg:         rgba(255,255,255,0.92);
+        --card-border:     rgba(0,85,204,0.20);
+        --card-border-h:   rgba(0,85,204,0.50);
+        --text-primary:    #0f172a;
+        --text-secondary:  #475569;
+        --text-muted:      #94a3b8;
+        --shadow:          0 8px 40px rgba(0,0,0,0.10);
+        --shadow-glow:     0 0 40px rgba(0,85,204,0.15);
+        --real-color:      #16a34a;
+        --fake-color:      #dc2626;
+        --warn-color:      #d97706;
+      }
 
-    <title>Deepfake Detection</title>
+      /* ═══════════════════════════════════════════════════════════
+         BASE
+      ═══════════════════════════════════════════════════════════ */
+      *, *::before, *::after { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: 'Space Grotesk', sans-serif;
+        background-color: var(--bg);
+        color: var(--text-primary);
+        min-height: 100dvh;
+        margin: 0;
+        transition: background-color 0.4s ease, color 0.4s ease;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,255,102,0.08) 0%, transparent 60%),
+          radial-gradient(circle at 1px 1px, rgba(0,255,102,0.12) 1px, transparent 0),
+          radial-gradient(circle at 10px 10px, rgba(0,255,102,0.05) 1px, transparent 0);
+        background-size: auto, 22px 22px, 22px 22px;
+        pointer-events: none;
+        z-index: 0;
+        transition: opacity 0.4s;
+      }
+      body.light-mode::before {
+        background-image:
+          radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,85,204,0.06) 0%, transparent 60%),
+          radial-gradient(circle at 1px 1px, rgba(0,85,204,0.08) 1px, transparent 0),
+          radial-gradient(circle at 10px 10px, rgba(0,85,204,0.04) 1px, transparent 0);
+        background-size: auto, 22px 22px, 22px 22px;
+      }
+      main { position: relative; z-index: 1; }
+
+      /* ═══════════════════════════════════════════════════════════
+         KEYFRAME ANIMATIONS
+      ═══════════════════════════════════════════════════════════ */
+      @keyframes fadeInUp    { from { opacity:0; transform:translateY(32px);  } to { opacity:1; transform:translateY(0);  } }
+      @keyframes fadeInDown  { from { opacity:0; transform:translateY(-24px); } to { opacity:1; transform:translateY(0);  } }
+      @keyframes fadeIn      { from { opacity:0; } to { opacity:1; } }
+      @keyframes scaleIn     { from { opacity:0; transform:scale(0.8) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+      @keyframes slideRight  { from { opacity:0; transform:translateX(-40px); } to { opacity:1; transform:translateX(0); } }
+      @keyframes slideLeft   { from { opacity:0; transform:translateX(40px); }  to { opacity:1; transform:translateX(0); } }
+      @keyframes glowPulse   { 0%,100% { box-shadow: 0 0 20px var(--accent-dim); } 50% { box-shadow: 0 0 50px rgba(0,255,102,0.5), 0 0 80px rgba(0,255,102,0.2); } }
+      @keyframes glowPulseL  { 0%,100% { box-shadow: 0 0 20px rgba(0,85,204,0.15); } 50% { box-shadow: 0 0 50px rgba(0,85,204,0.35); } }
+      @keyframes orbSpin     { to { transform: rotate(360deg); } }
+      @keyframes counterOrb  { to { transform: rotate(-360deg); } }
+      @keyframes scanDown    { 0% { top:-2px; opacity:1; } 80% { opacity:.8; } 100% { top:100%; opacity:0; } }
+      @keyframes scanRing    { 0% { transform:scale(.6); opacity:1; } 100% { transform:scale(2); opacity:0; } }
+      @keyframes textCycle   { 0%,15% { opacity:1; transform:none; } 20%,100% { opacity:0; transform:translateY(-12px); } }
+      @keyframes progressBar { from { width:0%; } to { width:100%; } }
+      @keyframes particle    { 0% { transform:translateY(0) scale(1); opacity:.8; } 100% { transform:translateY(-120px) scale(.2); opacity:0; } }
+      @keyframes verdictIn   { 0% { opacity:0; transform:scale(.5) rotateY(90deg); } 60% { transform:scale(1.1) rotateY(-5deg); } 100% { opacity:1; transform:scale(1) rotateY(0); } }
+      @keyframes shimmer     { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+      @keyframes bounce      { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+      @keyframes rippleOut   { to { transform:scale(4); opacity:0; } }
+      @keyframes toastIn     { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
+      @keyframes toastOut    { from { opacity:1; } to { opacity:0; transform:translateX(40px); } }
+      @keyframes navIn       { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+      @keyframes meterFill   { from { width:0%; } to { width:var(--pct,50%); } }
+      @keyframes countNum    { from { opacity:0; transform:scale(.7); } to { opacity:1; transform:scale(1); } }
+
+      /* ═══════════════════════════════════════════════════════════
+         UTILITY ANIMATION CLASSES
+      ═══════════════════════════════════════════════════════════ */
+      .anim-fadeInUp  { animation: fadeInUp  .6s cubic-bezier(.22,.68,0,1.2) both; }
+      .anim-fadeIn    { animation: fadeIn    .5s ease both; }
+      .anim-scaleIn   { animation: scaleIn   .5s cubic-bezier(.34,1.56,.64,1) both; }
+      .anim-slideR    { animation: slideRight .5s ease both; }
+      .anim-slideL    { animation: slideLeft  .5s ease both; }
+      .delay-1 { animation-delay:.1s; }  .delay-2 { animation-delay:.2s; }
+      .delay-3 { animation-delay:.3s; }  .delay-4 { animation-delay:.4s; }
+      .delay-5 { animation-delay:.5s; }  .delay-6 { animation-delay:.6s; }
+      .delay-7 { animation-delay:.7s; }  .delay-8 { animation-delay:.8s; }
+
+      /* Scroll reveal */
+      .reveal { opacity:0; transform:translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+      .reveal.is-visible { opacity:1; transform:none; }
+
+      /* ═══════════════════════════════════════════════════════════
+         GLASSMORPHIC CARD
+      ═══════════════════════════════════════════════════════════ */
+      .lt-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 2rem;
+        color: var(--text-primary);
+        transition: border-color .3s, box-shadow .3s;
+        position: relative;
+        overflow: hidden;
+      }
+      .lt-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(0,255,102,0.04) 0%, transparent 60%);
+        pointer-events: none;
+        border-radius: inherit;
+      }
+      .lt-card:hover {
+        border-color: var(--card-border-h);
+        box-shadow: var(--shadow), var(--shadow-glow);
+      }
+      body.light-mode .lt-card::before {
+        background: linear-gradient(135deg, rgba(0,85,204,0.03) 0%, transparent 60%);
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+         BUTTONS
+      ═══════════════════════════════════════════════════════════ */
+      .lt-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+        color: #050e1a;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: .85rem 2rem;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: transform .2s, box-shadow .2s, filter .2s;
+        box-shadow: 0 0 20px rgba(0,255,102,0.35);
+        text-decoration: none;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        letter-spacing: .02em;
+      }
+      .lt-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity .3s;
+      }
+      .lt-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 0 35px rgba(0,255,102,0.6); filter: brightness(1.05); text-decoration: none; }
+      .lt-btn:active { transform: scale(0.97); }
+      .lt-btn:hover::after { opacity: 1; }
+      .lt-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+      body.light-mode .lt-btn { color: #fff; box-shadow: 0 0 20px rgba(0,85,204,0.3); }
+      body.light-mode .lt-btn:hover { box-shadow: 0 0 35px rgba(0,85,204,0.5); }
+
+      /* Ripple */
+      .lt-ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.4); transform: scale(0); animation: rippleOut .6s ease-out forwards; pointer-events: none; }
+
+      /* Back link */
+      .lt-back {
+        color: var(--accent); font-weight: 600; text-decoration: none; font-size: .92rem;
+        display: inline-flex; align-items: center; gap: .3rem;
+        transition: gap .2s, color .2s;
+      }
+      .lt-back:hover { color: var(--accent-hover); gap: .6rem; }
+
+      /* ═══════════════════════════════════════════════════════════
+         BADGES
+      ═══════════════════════════════════════════════════════════ */
+      .lt-badge-real, .lt-badge-fake, .lt-badge-unknown {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .4rem 1.2rem; border-radius: 999px;
+        font-weight: 700; font-size: 1rem; letter-spacing: .05em;
+        position: relative; overflow: hidden;
+      }
+      .lt-badge-real   { background: rgba(0,255,102,0.12); color: var(--real-color); border: 1.5px solid var(--real-color); }
+      .lt-badge-fake   { background: rgba(255,77,109,0.12); color: var(--fake-color); border: 1.5px solid var(--fake-color); }
+      .lt-badge-unknown{ background: rgba(251,191,36,0.12); color: var(--warn-color); border: 1.5px solid var(--warn-color); }
+
+      /* ═══════════════════════════════════════════════════════════
+         FILE DROP AREA
+      ═══════════════════════════════════════════════════════════ */
+      .lt-drop {
+        border: 2px dashed var(--card-border);
+        border-radius: 16px;
+        padding: 2.5rem 1.5rem;
+        cursor: pointer;
+        transition: border-color .3s, background .3s, transform .2s;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .lt-drop::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 0%, rgba(0,255,102,0.06), transparent 70%);
+        opacity: 0;
+        transition: opacity .3s;
+      }
+      .lt-drop:hover, .lt-drop.drag-over {
+        border-color: var(--accent);
+        background: rgba(0,255,102,0.04);
+        transform: scale(1.01);
+      }
+      .lt-drop:hover::before, .lt-drop.drag-over::before { opacity: 1; }
+      body.light-mode .lt-drop::before { background: radial-gradient(ellipse at 50% 0%, rgba(0,85,204,0.06), transparent 70%); }
+      body.light-mode .lt-drop:hover { background: rgba(0,85,204,0.04); border-color: var(--accent); }
+      .lt-drop .drop-icon {
+        font-size: 2.8rem;
+        display: block; margin-bottom: .75rem;
+        transition: transform .3s;
+        animation: bounce 2s ease-in-out infinite;
+      }
+      .lt-drop:hover .drop-icon { animation: none; transform: scale(1.15) translateY(-4px); }
+
+      /* ═══════════════════════════════════════════════════════════
+         SPINNER
+      ═══════════════════════════════════════════════════════════ */
+      .lt-spinner {
+        width: 44px; height: 44px;
+        border: 3px solid rgba(0,255,102,0.15);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: orbSpin .8s linear infinite;
+        margin: 0 auto;
+      }
+      body.light-mode .lt-spinner { border-color: rgba(0,85,204,0.15); border-top-color: var(--accent); }
+
+      /* ═══════════════════════════════════════════════════════════
+         CONFIDENCE METER
+      ═══════════════════════════════════════════════════════════ */
+      .lt-meter-wrap { background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; height: 8px; margin-top: .5rem; }
+      .lt-meter-bar  { height: 100%; border-radius: 999px; width: var(--pct,0%); animation: meterFill 1.2s cubic-bezier(.22,.68,0,1.2) .3s both; position: relative; overflow: hidden; }
+      .lt-meter-bar::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.4) 50%,transparent 100%); background-size:200% 100%; animation: shimmer 1.5s linear infinite; }
+      .meter-real { background: linear-gradient(90deg, #00cc52, #00FF66); }
+      .meter-fake { background: linear-gradient(90deg, #c0392b, #ff4d6d); }
+      .meter-warn { background: linear-gradient(90deg, #d97706, #fbbf24); }
+      body.light-mode .lt-meter-wrap { background: rgba(0,0,0,.08); }
+
+      /* ═══════════════════════════════════════════════════════════
+         STAT CARDS (result pages)
+      ═══════════════════════════════════════════════════════════ */
+      .lt-stat {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 1.25rem;
+        transition: border-color .3s, transform .2s;
+      }
+      .lt-stat:hover { border-color: var(--card-border-h); transform: translateY(-3px); }
+      .lt-stat-label { color: var(--text-secondary); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 .4rem; }
+      .lt-stat-value { color: var(--text-primary); font-size: 1.5rem; font-weight: 700; margin: 0; }
+
+      /* ═══════════════════════════════════════════════════════════
+         FULL-SCREEN PREDICT OVERLAY
+      ═══════════════════════════════════════════════════════════ */
+      #lt-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        background: rgba(5,10,25,0.97);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+      }
+      #lt-overlay.active { display: flex; animation: fadeIn .3s ease; }
+
+      /* Circuit lines on overlay */
+      #lt-overlay::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 1px 1px, rgba(0,255,102,0.10) 1px, transparent 0),
+          radial-gradient(circle at 11px 11px, rgba(0,255,102,0.05) 1px, transparent 0);
+        background-size: 22px 22px;
+        pointer-events: none;
+      }
+
+      /* Central neural orb */
+      .lt-orb-wrap { position: relative; width: 180px; height: 180px; margin: 0 auto 2rem; }
+      .lt-orb-ring {
+        position: absolute;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        animation: orbSpin linear infinite;
+      }
+      .lt-orb-ring:nth-child(1) { inset:0;    border-top-color: var(--accent); border-right-color: var(--accent); animation-duration: 2s; }
+      .lt-orb-ring:nth-child(2) { inset:18px; border-bottom-color: rgba(0,255,102,.6); border-left-color: rgba(0,255,102,.3); animation-duration: 3.2s; animation-direction: reverse; }
+      .lt-orb-ring:nth-child(3) { inset:36px; border-top-color: rgba(0,255,102,.4); border-right-color: rgba(0,255,102,.8); animation-duration: 1.5s; }
+      .lt-orb-ring:nth-child(4) { inset:54px; border-bottom-color: rgba(0,255,102,.2); animation-duration: 4s; animation-direction: reverse; }
+      .lt-orb-core {
+        position: absolute; inset: 60px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0,255,102,.25) 0%, transparent 70%);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.4rem;
+        animation: glowPulse 2s ease-in-out infinite;
+      }
+      /* Scanning line */
+      .lt-orb-scan {
+        position: absolute;
+        left: 0; right: 0; top: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--accent), var(--accent), transparent);
+        animation: scanDown 2s linear infinite;
+        border-radius: 999px;
+        box-shadow: 0 0 12px var(--accent);
+      }
+      /* Ripple rings */
+      .lt-orb-ripple {
+        position: absolute;
+        inset: -20px;
+        border-radius: 50%;
+        border: 1px solid rgba(0,255,102,.4);
+        animation: scanRing 2s ease-out infinite;
+      }
+      .lt-orb-ripple:nth-child(6) { animation-delay: .67s; }
+      .lt-orb-ripple:nth-child(7) { animation-delay: 1.33s; }
+
+      /* Status text */
+      .lt-overlay-title {
+        font-size: 1.5rem; font-weight: 700;
+        color: var(--accent); margin: 0 0 .5rem;
+        text-align: center;
+        text-shadow: 0 0 20px rgba(0,255,102,.5);
+      }
+      .lt-overlay-status {
+        color: var(--text-secondary); font-size: .9rem;
+        text-align: center; margin: 0 0 1.5rem;
+        min-height: 1.3em;
+        transition: opacity .3s;
+      }
+      /* Progress bar */
+      .lt-overlay-bar {
+        width: min(400px, 80vw);
+        height: 4px;
+        background: rgba(255,255,255,.08);
+        border-radius: 999px;
+        overflow: hidden;
+        margin: 0 auto 1.5rem;
+      }
+      .lt-overlay-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00cc52, #00FF66);
+        border-radius: 999px;
+        width: 0%;
+        transition: width .4s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .lt-overlay-bar-fill::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+        background-size: 60% 100%;
+        animation: shimmer 1s linear infinite;
+      }
+      /* Particles */
+      .lt-particle {
+        position: absolute;
+        bottom: 20%;
+        width: 4px; height: 4px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: particle 2s ease-out infinite;
+      }
+      /* Hint text */
+      .lt-overlay-hint {
+        color: var(--text-muted); font-size: .78rem; text-align: center;
+        margin-top: 1rem;
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+         TOAST NOTIFICATIONS
+      ═══════════════════════════════════════════════════════════ */
+      #lt-toasts {
+        position: fixed; top: calc(var(--nav-h) + 12px); right: 16px;
+        z-index: 10000; display: flex; flex-direction: column; gap: 8px;
+        pointer-events: none;
+      }
+      .lt-toast {
+        pointer-events: all;
+        display: flex; align-items: flex-start; gap: .75rem;
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 12px; padding: .85rem 1rem;
+        max-width: 340px; backdrop-filter: blur(16px);
+        box-shadow: var(--shadow);
+        animation: toastIn .35s cubic-bezier(.34,1.56,.64,1) both;
+        cursor: pointer;
+      }
+      .lt-toast.out { animation: toastOut .3s ease both; }
+      .lt-toast-icon { font-size: 1.2rem; flex-shrink:0; }
+      .lt-toast-body { flex:1; }
+      .lt-toast-title { font-weight:700; font-size:.88rem; color:var(--text-primary); margin:0 0 .15rem; }
+      .lt-toast-msg   { font-size:.8rem; color:var(--text-secondary); margin:0; }
+      .lt-toast-err   { border-color: rgba(255,77,109,.4); }
+      .lt-toast-warn  { border-color: rgba(251,191,36,.4); }
+      .lt-toast-ok    { border-color: rgba(0,255,102,.4); }
+
+      /* ═══════════════════════════════════════════════════════════
+         OVERRIDES FOR BOOTSTRAP (dark mode)
+      ═══════════════════════════════════════════════════════════ */
+      body:not(.light-mode) a { color: var(--accent); }
+      body:not(.light-mode) a:hover { color: var(--accent-hover); }
+      body:not(.light-mode) .badge.bg-success { background: #00ff66 !important; color:#050e1a !important; }
+      body:not(.light-mode) .badge.bg-danger  { background: #ff4d6d !important; color:#fff !important; }
+      body:not(.light-mode) .badge.bg-warning { background: #fbbf24 !important; color:#050e1a !important; }
+      body:not(.light-mode) .alert-danger     { background: rgba(255,77,109,.1); color:#fca5a5; border-color:rgba(255,77,109,.5); }
+      body:not(.light-mode) p     { color: var(--text-secondary); }
+      body:not(.light-mode) strong{ color: var(--text-primary); }
+
+      /* ═══════════════════════════════════════════════════════════
+         SCROLLBAR
+      ═══════════════════════════════════════════════════════════ */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(0,255,102,.3); border-radius: 999px; }
+      body.light-mode ::-webkit-scrollbar-thumb { background: rgba(0,85,204,.25); }
+
+      /* ═══════════════════════════════════════════════════════════
+         NAV ANIMATION
+      ═══════════════════════════════════════════════════════════ */
+      header { animation: navIn .5s ease both; }
+    </style>
+
+    <!-- Anti-flash -->
+    <script>
+      (function(){
+        if (localStorage.getItem('lt-theme') === 'light')
+          document.documentElement.classList.add('lt-lp');
+      })();
+    </script>
+    <style>html.lt-lp body { background-color:#f0f4ff !important; }</style>
+
+    <title>{% block title %}LokTruth — Deepfake Detection{% endblock %}</title>
 </head>
 <body>
+
+    <!-- ── TOAST CONTAINER ─────────────────────────────────────── -->
+    <div id="lt-toasts"></div>
+
+    <!-- ── PREDICTION OVERLAY ─────────────────────────────────── -->
+    <div id="lt-overlay" role="dialog" aria-modal="true" aria-label="Analyzing your file">
+      <!-- Particles -->
+      <div class="lt-particle" style="left:10%;animation-delay:0s;animation-duration:2.5s;"></div>
+      <div class="lt-particle" style="left:20%;animation-delay:.4s;animation-duration:3s;"></div>
+      <div class="lt-particle" style="left:35%;animation-delay:.8s;animation-duration:2.2s;"></div>
+      <div class="lt-particle" style="left:50%;animation-delay:.2s;animation-duration:2.8s;"></div>
+      <div class="lt-particle" style="left:65%;animation-delay:.6s;animation-duration:2.4s;"></div>
+      <div class="lt-particle" style="left:80%;animation-delay:1s;animation-duration:3.2s;"></div>
+      <div class="lt-particle" style="left:90%;animation-delay:.3s;animation-duration:2.6s;"></div>
+
+      <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;">
+        <!-- Neural orb -->
+        <div class="lt-orb-wrap">
+          <div class="lt-orb-ripple"></div>
+          <div class="lt-orb-ripple"></div>
+          <div class="lt-orb-ripple"></div>
+          <div class="lt-orb-ring"></div>
+          <div class="lt-orb-ring"></div>
+          <div class="lt-orb-ring"></div>
+          <div class="lt-orb-ring"></div>
+          <div class="lt-orb-scan"></div>
+          <div class="lt-orb-core" id="lt-orb-emoji"><i class="ph ph-brain"></i></div>
+        </div>
+
+        <h2 class="lt-overlay-title" id="lt-overlay-title">Analyzing…</h2>
+        <p class="lt-overlay-status" id="lt-overlay-status">Initializing neural network…</p>
+
+        <div class="lt-overlay-bar">
+          <div class="lt-overlay-bar-fill" id="lt-overlay-bar"></div>
+        </div>
+
+        <p class="lt-overlay-hint" id="lt-overlay-pct">0%</p>
+        <p class="lt-overlay-hint" style="margin-top:.3rem;">This may take 15–60 seconds depending on file size</p>
+      </div>
+    </div>
+
+    <!-- ── NAV ─────────────────────────────────────────────────── -->
     {% include 'nav-bar.html' %}
 
-    {% block content %}
-    {% endblock %}
+    <!-- ── MAIN ────────────────────────────────────────────────── -->
+    <main>
+      {% block content %}{% endblock %}
+    </main>
 
-    <!-- jQuery -->
+    <!-- Scripts -->
     <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
-
-    <!-- Popper.js -->
     <script src="{% static 'js/popper.min.js' %}"></script>
-
-    <!-- jQuery UI -->
     <script src="{% static 'js/jquery-ui.min.js' %}"></script>
 
-    {% block js_cripts %}
-    {% endblock %}
+    {% block js_cripts %}{% endblock %}
 
     {% include 'footer.html' %}
+
+    <script>
+    /* ═══════════════════════════════════════════════════════════
+       GLOBAL APP JS
+    ═══════════════════════════════════════════════════════════ */
+    (function(){
+
+      /* ── Theme ─────────────────────────────────────────────── */
+      var isLight = localStorage.getItem('lt-theme') === 'light';
+      if (isLight) document.body.classList.add('light-mode');
+      document.documentElement.classList.remove('lt-lp');
+
+      function setThemeIcons(light) {
+        document.querySelectorAll('.lt-theme-icon').forEach(function(el){ el.innerHTML = light ? '<i class="ph ph-sun"></i>' : '<i class="ph ph-moon"></i>'; });
+      }
+      setThemeIcons(isLight);
+
+      document.addEventListener('DOMContentLoaded', function(){
+
+        /* Theme toggles */
+        document.querySelectorAll('.lt-theme-toggle').forEach(function(btn){
+          setThemeIcons(document.body.classList.contains('light-mode'));
+          btn.addEventListener('click', function(){
+            document.body.classList.toggle('light-mode');
+            var light = document.body.classList.contains('light-mode');
+            localStorage.setItem('lt-theme', light ? 'light' : 'dark');
+            setThemeIcons(light);
+          });
+        });
+
+        /* Mobile menu */
+        var menuBtn    = document.getElementById('lt-menu-btn');
+        var mobileMenu = document.getElementById('lt-mobile-menu');
+        if (menuBtn && mobileMenu) {
+          menuBtn.addEventListener('click', function(e){
+            e.stopPropagation();
+            var open = !mobileMenu.classList.contains('hidden');
+            mobileMenu.classList.toggle('hidden', open);
+            if (!open) mobileMenu.style.animation = 'scaleIn .25s cubic-bezier(.34,1.56,.64,1) both';
+          });
+          mobileMenu.querySelectorAll('a').forEach(function(a){
+            a.addEventListener('click', function(){ mobileMenu.classList.add('hidden'); });
+          });
+          document.addEventListener('click', function(e){
+            if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target))
+              mobileMenu.classList.add('hidden');
+          });
+        }
+
+        /* Button ripple effect */
+        document.querySelectorAll('.lt-btn').forEach(function(btn){
+          btn.addEventListener('click', function(e){
+            if (btn.disabled) return;
+            var r = document.createElement('span');
+            r.className = 'lt-ripple';
+            var rect = btn.getBoundingClientRect();
+            var size = Math.max(rect.width, rect.height);
+            r.style.cssText = 'width:'+size+'px;height:'+size+'px;left:'+(e.clientX-rect.left-size/2)+'px;top:'+(e.clientY-rect.top-size/2)+'px';
+            btn.appendChild(r);
+            setTimeout(function(){ r.remove(); }, 600);
+          });
+        });
+
+        /* Scroll reveal */
+        var observer = new IntersectionObserver(function(entries){
+          entries.forEach(function(entry){
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08 });
+        document.querySelectorAll('.reveal').forEach(function(el){ observer.observe(el); });
+
+        /* Animate stat numbers (confidence, etc) */
+        document.querySelectorAll('[data-count]').forEach(function(el){
+          var target = parseFloat(el.dataset.count);
+          var decimals = el.dataset.decimals ? parseInt(el.dataset.decimals) : 0;
+          var duration = 1400;
+          var start = null;
+          function step(ts){
+            if (!start) start = ts;
+            var progress = Math.min((ts - start) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = (target * eased).toFixed(decimals);
+            if (progress < 1) requestAnimationFrame(step);
+          }
+          setTimeout(function(){ requestAnimationFrame(step); }, 400);
+        });
+
+        /* Predict overlay activation */
+        var statusMsgs = {
+          audio: [
+            'Uploading audio file…',
+            'Extracting waveform features…',
+            'Running mel-spectrogram analysis…',
+            'Detecting vocal artifacts…',
+            'Running LSTM inference…',
+            'Computing confidence score…',
+            'Generating report…'
+          ],
+          video: [
+            'Uploading video…',
+            'Splitting frames…',
+            'Detecting faces in frames…',
+            'Preprocessing face crops…',
+            'Running deepfake model…',
+            'Analyzing facial consistency…',
+            'Computing identity variance…',
+            'Finalizing report…'
+          ],
+          image: [
+            'Uploading image…',
+            'Detecting faces in image…',
+            'Preprocessing regions of interest…',
+            'Running image deepfake model…',
+            'Analyzing pixel artifacts…',
+            'Computing confidence score…'
+          ]
+        };
+        var overlayEmojis = { audio:'<i class="ph ph-music-notes"></i>', video:'<i class="ph ph-film-strip"></i>', image:'<i class="ph ph-image"></i>' };
+
+        document.querySelectorAll('[data-lt-detect]').forEach(function(form){
+          form.addEventListener('submit', function(e){
+            if (!form.checkValidity()) return;
+            var type = form.dataset.ltDetect || 'video';
+            showOverlay(type);
+          });
+        });
+
+        function showOverlay(type) {
+          var overlay  = document.getElementById('lt-overlay');
+          var titleEl  = document.getElementById('lt-overlay-title');
+          var statusEl = document.getElementById('lt-overlay-status');
+          var barEl    = document.getElementById('lt-overlay-bar');
+          var pctEl    = document.getElementById('lt-overlay-pct');
+          var emojiEl  = document.getElementById('lt-orb-emoji');
+          if (!overlay) return;
+
+          var titles  = { audio:'Analyzing Audio', video:'Analyzing Video', image:'Analyzing Image' };
+          titleEl.textContent  = titles[type] || 'Analyzing…';
+          emojiEl.innerHTML  = overlayEmojis[type] || '<i class="ph ph-brain"></i>';
+
+          var msgs = statusMsgs[type] || statusMsgs.video;
+          var progress = 0;
+          var msgIndex = 0;
+
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+
+          /* Progress simulation */
+          var barInterval = setInterval(function(){
+            var step = Math.random() * 6 + 2;
+            if (progress < 90) { progress += step; }
+            else { progress += .5; }
+            progress = Math.min(progress, 99);
+            barEl.style.width = progress + '%';
+            pctEl.textContent = Math.round(progress) + '%';
+          }, 700);
+
+          /* Status text cycling */
+          statusEl.textContent = msgs[0];
+          var msgInterval = setInterval(function(){
+            msgIndex = (msgIndex + 1) % msgs.length;
+            statusEl.style.opacity = '0';
+            setTimeout(function(){
+              statusEl.textContent = msgs[msgIndex];
+              statusEl.style.opacity = '1';
+            }, 200);
+          }, 2200);
+
+          /* Cleanup on page unload */
+          window.addEventListener('pagehide', function(){
+            clearInterval(barInterval);
+            clearInterval(msgInterval);
+          });
+
+          /* Safety timeout — if server takes too long, show message */
+          setTimeout(function(){
+            if (overlay.classList.contains('active')) {
+              showToast('warn', '⏳ Still working…', 'Large files may take up to 2 minutes. Please wait.');
+            }
+          }, 30000);
+        }
+
+      }); /* end DOMContentLoaded */
+
+      /* ── Toast System ──────────────────────────────────────── */
+      window.showToast = function(type, title, msg, duration) {
+        var container = document.getElementById('lt-toasts');
+        if (!container) return;
+        var icons = { 'error':'<i class="ph ph-warning-circle" style="color:var(--fake-color)"></i>', 'warn':'<i class="ph ph-warning" style="color:var(--warn-color)"></i>', 'info':'<i class="ph ph-info" style="color:#3b82f6"></i>', 'success':'<i class="ph ph-check-circle" style="color:var(--real-color)"></i>' };
+        var cls   = { ok:'lt-toast-ok', err:'lt-toast-err', warn:'lt-toast-warn' };
+        var toast = document.createElement('div');
+        toast.className = 'lt-toast ' + (cls[type] || '');
+        toast.innerHTML = '<span class="lt-toast-icon">'+(icons[type]||'<i class="ph ph-info"></i>')+'</span>'
+          + '<div class="lt-toast-body">'
+          + '<p class="lt-toast-title">'+title+'</p>'
+          + (msg ? '<p class="lt-toast-msg">'+msg+'</p>' : '')
+          + '</div>';
+        toast.addEventListener('click', function(){ removeToast(toast); });
+        container.appendChild(toast);
+        var t = parseInt(duration) || 5000;
+        setTimeout(function(){ removeToast(toast); }, t);
+      };
+      function removeToast(t){
+        t.classList.add('out');
+        setTimeout(function(){ t.remove(); }, 320);
+      }
+
+      /* ── Error handling ────────────────────────────────────── */
+      window.onerror = function(msg, src, line, col, err){
+        if (document.getElementById('lt-overlay') &&
+            document.getElementById('lt-overlay').classList.contains('active')) {
+          document.getElementById('lt-overlay').classList.remove('active');
+          document.body.style.overflow = '';
+          showToast('err', 'Something went wrong', 'Please try again or use a different file.');
+        }
+        return false;
+      };
+      window.addEventListener('unhandledrejection', function(e){
+        console.error('Unhandled promise rejection:', e.reason);
+      });
+
+    })();
+    </script>
+
+    <!-- ── THREE.JS PARTICLE CURSOR ─────────────────────────── -->
+    <canvas id="lt-particle-canvas" aria-hidden="true" style="
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 99998;
+    "></canvas>
+
+    <!-- Custom cursor dot -->
+    <div id="lt-cursor-dot" aria-hidden="true" style="
+      position: fixed;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      transition: width .15s, height .15s, background .3s;
+      box-shadow: 0 0 12px var(--accent), 0 0 24px rgba(0,255,102,.4);
+      will-change: left, top;
+    "></div>
+
+    <!-- Cursor ring -->
+    <div id="lt-cursor-ring" aria-hidden="true" style="
+      position: fixed;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(0,255,102,.55);
+      pointer-events: none;
+      z-index: 99997;
+      transform: translate(-50%, -50%);
+      transition: width .2s cubic-bezier(.34,1.56,.64,1),
+                  height .2s cubic-bezier(.34,1.56,.64,1),
+                  border-color .3s, background .3s;
+      will-change: left, top;
+    "></div>
+
+    <style>
+      /* Hide system cursor on desktop only */
+      @media (pointer: fine) {
+        body, body * { cursor: none !important; }
+        a, button, [role=button], label, select, .lt-drop, .feat-card { cursor: none !important; }
+        input[type=range] { cursor: none !important; }
+        input, textarea { cursor: none !important; }
+      }
+      /* States */
+      body.cursor-click #lt-cursor-dot {
+        width: 18px !important; height: 18px !important;
+        box-shadow: 0 0 20px var(--accent), 0 0 50px rgba(0,255,102,.6);
+      }
+      body.cursor-hover #lt-cursor-ring {
+        width: 60px !important; height: 60px !important;
+        border-color: var(--accent) !important;
+        background: rgba(0,255,102,.05) !important;
+      }
+      body.light-mode #lt-cursor-dot {
+        box-shadow: 0 0 12px var(--accent), 0 0 24px rgba(0,85,204,.3);
+      }
+      body.light-mode #lt-cursor-ring {
+        border-color: rgba(0,85,204,.4);
+      }
+    </style>
+
+    <script>
+    /* ═══════════════════════════════════════════════════════════
+       PARTICLE CURSOR — Three.js WebGL
+       Falls back to CSS canvas2D if Three.js unavailable
+    ═══════════════════════════════════════════════════════════ */
+    (function () {
+      /* Only run on pointer-capable (non-touch-only) devices */
+      if (!window.matchMedia('(pointer: fine)').matches) return;
+
+      var dot    = document.getElementById('lt-cursor-dot');
+      var ring   = document.getElementById('lt-cursor-ring');
+      var canvas = document.getElementById('lt-particle-canvas');
+      var ctx    = canvas.getContext('2d');
+
+      var mouse  = { x: -200, y: -200 };
+      var ringPos= { x: -200, y: -200 };
+      var particles = [];
+      var hue   = 141; /* green hue in dark mode */
+
+      /* Resize canvas */
+      function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize, { passive: true });
+
+      /* ── Particle class ───────────────────────────────────── */
+      function Particle(x, y, isClick) {
+        this.x    = x;
+        this.y    = y;
+        var angle = Math.random() * Math.PI * 2;
+        var speed = isClick
+          ? Math.random() * 6 + 3          /* click burst: fast */
+          : Math.random() * 1.5 + 0.3;    /* trail: gentle drift */
+        this.vx   = Math.cos(angle) * speed;
+        this.vy   = Math.sin(angle) * speed - (isClick ? 0 : 0.5);
+        this.life = 1;                     /* 0–1 opacity */
+        this.decay= isClick
+          ? Math.random() * 0.03 + 0.025  /* click: faster fade */
+          : Math.random() * 0.02 + 0.012; /* trail: slower fade */
+        this.size = isClick
+          ? Math.random() * 5 + 2
+          : Math.random() * 3 + 1;
+        this.isClick = isClick;
+        this.hue  = hue + (Math.random() * 40 - 20);  /* slight hue variance */
+        this.sat  = isClick ? 100 : 90;
+      }
+      Particle.prototype.update = function () {
+        this.x   += this.vx;
+        this.y   += this.vy;
+        this.vy  += 0.08;   /* gentle gravity */
+        this.vx  *= 0.97;   /* air resistance */
+        this.life -= this.decay;
+        this.size *= 0.97;
+      };
+      Particle.prototype.draw = function () {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.life);
+        ctx.fillStyle   = 'hsl(' + this.hue + ',' + this.sat + '%,60%)';
+        ctx.shadowBlur  = this.isClick ? 20 : 10;
+        ctx.shadowColor = 'hsl(' + this.hue + ',100%,70%)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, Math.max(0.1, this.size), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      };
+      Particle.prototype.dead = function () { return this.life <= 0; };
+
+      /* ── Mouse tracking ───────────────────────────────────── */
+      var lastTrail = 0;
+      document.addEventListener('mousemove', function (e) {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+
+        /* Move cursor dot instantly */
+        dot.style.left = mouse.x + 'px';
+        dot.style.top  = mouse.y + 'px';
+
+        /* Trail particles — throttled */
+        var now = Date.now();
+        if (now - lastTrail > 28) {
+          lastTrail = now;
+          var count = 2;
+          for (var i = 0; i < count; i++) {
+            /* small random offset so trail isn't a single line */
+            particles.push(new Particle(
+              mouse.x + (Math.random() - .5) * 4,
+              mouse.y + (Math.random() - .5) * 4,
+              false
+            ));
+          }
+        }
+      }, { passive: true });
+
+      /* Click burst */
+      document.addEventListener('click', function (e) {
+        document.body.classList.add('cursor-click');
+        setTimeout(function () { document.body.classList.remove('cursor-click'); }, 150);
+        for (var i = 0; i < 18; i++) {
+          particles.push(new Particle(e.clientX, e.clientY, true));
+        }
+      });
+
+      /* Hover expand ring */
+      var hoverEls = 'a, button, [role=button], label, .lt-drop, .feat-card, .lt-card, .lt-nav-link, input[type=range]';
+      document.addEventListener('mouseover', function (e) {
+        if (e.target.closest(hoverEls)) {
+          document.body.classList.add('cursor-hover');
+        }
+      });
+      document.addEventListener('mouseout', function (e) {
+        if (e.target.closest(hoverEls)) {
+          document.body.classList.remove('cursor-hover');
+        }
+      });
+
+      /* ── Adapt hue to light/dark mode ─────────────────────── */
+      function updateHue() {
+        hue = document.body.classList.contains('light-mode') ? 220 : 141;
+        ring.style.borderColor = document.body.classList.contains('light-mode')
+          ? 'rgba(0,85,204,.45)' : 'rgba(0,255,102,.55)';
+        dot.style.boxShadow = document.body.classList.contains('light-mode')
+          ? '0 0 12px #0055cc, 0 0 24px rgba(0,85,204,.35)'
+          : '0 0 12px #00FF66, 0 0 24px rgba(0,255,102,.4)';
+      }
+      updateHue();
+      /* Watch for theme changes via MutationObserver */
+      new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+          if (m.attributeName === 'class') updateHue();
+        });
+      }).observe(document.body, { attributes: true });
+
+      /* ── Animation loop ───────────────────────────────────── */
+      function loop() {
+        /* Ring lerp follow */
+        var lerpSpeed = document.body.classList.contains('cursor-hover') ? 0.1 : 0.13;
+        ringPos.x += (mouse.x - ringPos.x) * lerpSpeed;
+        ringPos.y += (mouse.y - ringPos.y) * lerpSpeed;
+        ring.style.left = ringPos.x + 'px';
+        ring.style.top  = ringPos.y + 'px';
+
+        /* Canvas particles */
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles = particles.filter(function (p) {
+          p.update();
+          if (!p.dead()) { p.draw(); return true; }
+          return false;
+        });
+
+        requestAnimationFrame(loop);
+      }
+      loop();
+
+      /* Hide when cursor leaves window */
+      document.addEventListener('mouseleave', function () {
+        dot.style.opacity  = '0';
+        ring.style.opacity = '0';
+      });
+      document.addEventListener('mouseenter', function () {
+        dot.style.opacity  = '1';
+        ring.style.opacity = '1';
+      });
+
+    })();
+    </script>
 </body>
 </html>

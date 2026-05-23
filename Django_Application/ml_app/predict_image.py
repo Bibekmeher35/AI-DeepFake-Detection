@@ -119,12 +119,16 @@ def predict_image(image_path, model, device, transform, threshold=0.55, use_tta=
     else:
         return "Real", prob_fake
 
-def predict_image_from_file(image_path, model_path="best_deepfake_model.pth", device=None, threshold=0.55):
+def predict_image_from_file(image_path, model_path=None, device=None, threshold=0.55):
     """
     High-level function to load model, build transform, validate image, and predict label & confidence.
     Returns dictionary: {'label': 'Fake' or 'Real', 'confidence': float in [0,1]}
     """
-    model_path = os.path.join(os.path.dirname(__file__), model_path)
+    # Default to models directory
+    if model_path is None:
+        from django.conf import settings
+        model_path = os.path.join(settings.PROJECT_DIR, "models", "best_deepfake_model.pth")
+    
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -143,8 +147,6 @@ def predict_image_from_file(image_path, model_path="best_deepfake_model.pth", de
 def main():
     import argparse
     import sys
-    import tkinter as tk
-    from tkinter import filedialog
 
     parser = argparse.ArgumentParser(description="Deepfake Image Detection (matched to training pipeline)")
     parser.add_argument('--model', '-m', type=str, default='best_deepfake_model.pth',
@@ -153,8 +155,8 @@ def main():
                         help="Decision threshold for P(fake) (default 0.5)")
     parser.add_argument('--arch', '-a', type=str, default=None,
                         help="Model architecture; if omitted, will use the 'arch' stored in the checkpoint")
-    parser.add_argument('--image', '-i', type=str, default=None,
-                        help="Optional: path to an image file; if omitted, a file picker will open")
+    parser.add_argument('--image', '-i', type=str, required=True,
+                        help="Path to an image file for prediction (required)")
     parser.add_argument('--no-tta', action='store_true', help="Disable Test-Time Augmentation (default: enabled)")
     args = parser.parse_args()
 
@@ -165,21 +167,7 @@ def main():
     else:
         print(colored("GPU not detected. Using CPU for inference.", 'yellow'))
 
-    # Get image path (CLI or file picker)
     image_path = args.image
-    if not image_path:
-        print("Select one image file for deepfake detection.")
-        root = tk.Tk()
-        root.withdraw()
-        default_dir = ""  # change if a specific default folder is desired
-        image_path = filedialog.askopenfilename(
-            title="Select an image for Deepfake Detection",
-            initialdir=default_dir,
-            filetypes=[("Image files", "*.jpg *.jpeg *.png *.bmp *.tiff")]
-        )
-        if not image_path:
-            print(colored("No image selected. Exiting.", 'yellow'))
-            sys.exit(0)
 
     try:
         validate_image_file(image_path)

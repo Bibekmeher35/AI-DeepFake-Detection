@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torchaudio
 import torchaudio.transforms as T
+import soundfile as sf
+import numpy as np
 import os
 from pathlib import Path
 from torchvision.models import resnet18
@@ -25,12 +27,25 @@ class ResNetAudio(nn.Module):
 # Preprocessing
 # ----------------------------
 def load_and_preprocess(path, target_sr=16000, seconds=5.0, n_mels=128):
-    wav, sr = torchaudio.load(str(path))
+    # Use soundfile directly to avoid torchaudio backend issues
+    wav, sr = sf.read(str(path), dtype='float32')
+    
+    # Convert to torch tensor and ensure correct shape (channels, samples)
+    wav = torch.from_numpy(wav)
+    if len(wav.shape) == 1:
+        wav = wav.unsqueeze(0)  # Add channel dimension
+    else:
+        wav = wav.T  # Transpose to (channels, samples)
+    
+    # Convert stereo to mono if needed
     if wav.shape[0] > 1:
         wav = wav.mean(dim=0, keepdim=True)
+    
+    # Resample if needed
     if sr != target_sr:
         wav = T.Resample(sr, target_sr)(wav)
 
+    # Pad or trim to fixed length
     samples = int(seconds * target_sr)
     if wav.shape[1] > samples:
         wav = wav[:, :samples]
@@ -38,6 +53,7 @@ def load_and_preprocess(path, target_sr=16000, seconds=5.0, n_mels=128):
         pad = samples - wav.shape[1]
         wav = nn.functional.pad(wav, (0, pad))
 
+    # Generate mel-spectrogram
     melspec = T.MelSpectrogram(
         sample_rate=target_sr, n_fft=1024, hop_length=256, win_length=1024,
         n_mels=n_mels, f_min=20, f_max=target_sr//2, power=2.0
@@ -53,7 +69,7 @@ def load_and_preprocess(path, target_sr=16000, seconds=5.0, n_mels=128):
 def predict(model_path, audio_path, device="cpu"):
     device = torch.device(device)
     model = ResNetAudio().to(device)
-    checkpoint = torch.load(model_path, map_location=device)
+    checkpoint = torch.load(model_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint["model"])
     model.eval()
 
@@ -70,7 +86,7 @@ def predict(model_path, audio_path, device="cpu"):
 # Example usage
 # ----------------------------
 if __name__ == "__main__":
-    model_path = "./best.pt"
+    model_path = "../models/best.pt"
 
     root = tk.Tk()
     root.withdraw()  # Hide the main window
